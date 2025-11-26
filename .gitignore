@@ -136,7 +136,6 @@ dmypy.json
 # --- CUSTOM ---
 gdalwmscache/
 *.zip
-*.qm
 .qt_for_python/
 *.xlsx
 *.docx

@@ -28,6 +28,8 @@ from qgis.core import Qgis, QgsProject, QgsTask
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.PyQt.QtGui import QIcon
 
+from ibgedatadownloader.__about__ import DIR_PLUGIN_ROOT
+
 from .MyHTMLParser import MyHTMLParser
 
 
@@ -50,11 +52,11 @@ class WorkerSearchManager(QgsTask):
         self.project = QgsProject.instance()
         self.msgBar = self.iface.messageBar()
         self.htmlParser = MyHTMLParser()
-        self.rootFtp = rootFtp if rootFtp.endswith("/") else rootFtp + "/"
+        self.rootFtp = rootFtp if rootFtp.endswith("/") else f"{rootFtp}/"
         self.txtSearch = txtSearch
         self.matchContains = matchContains
         self.matchScore = matchScore
-        self.pluginIcon = QIcon(":/plugins/ibgedatadownloader/icon.png")
+        self.pluginIcon = QIcon(str(DIR_PLUGIN_ROOT / "icon.png"))
         self.exception = []
 
         # Avoid headers and maxlines limit error
@@ -113,7 +115,8 @@ class WorkerSearchManager(QgsTask):
         # Set timeout for requests
         socket.setdefaulttimeout(15)
         try:
-            self.htmlParser.feed(http.client.parse_headers(urllib.request.urlopen(self.rootFtp)).as_string())
+            response = urllib.request.urlopen(self.rootFtp)
+            self.htmlParser.feed(response.read().decode("utf-8", errors="ignore"))
         except socket.timeout as e:
             self.exception.append(e)
             self.processResult.emit(
@@ -134,14 +137,15 @@ class WorkerSearchManager(QgsTask):
         if children:
             searchUrls = []
             for child in children:
+                # Skip child pointing to the domain
+                if child[0] == "https://www.ibge.gov.br/":
+                    continue
                 searchUrls.append([self.rootFtp + child[0], child[1]])
                 if self.matchContains:
                     if self.txtSearch.lower() in child[0].lower():
                         matchUrl.append([self.rootFtp + child[0], child[1]])
                         self.textProgress.emit(
-                            self.tr("{} Product(s) found.\nThe search may take several minutes...").format(
-                                len(matchUrl)
-                            )
+                            self.tr(f"{len(matchUrl)} Product(s) found.\nThe search may take several minutes...")
                         )
                 elif (
                     SequenceMatcher(
@@ -154,7 +158,7 @@ class WorkerSearchManager(QgsTask):
                 ):
                     matchUrl.append([self.rootFtp + child[0], child[1]])
                     self.textProgress.emit(
-                        self.tr("{} Product(s) found.\nThe search may take several minutes...").format(len(matchUrl))
+                        self.tr(f"{len(matchUrl)} Product(s) found.\nThe search may take several minutes...")
                     )
             loop = 0
             while True:
@@ -173,7 +177,10 @@ class WorkerSearchManager(QgsTask):
                         )
                         return False
                     loop += 1
-                    # print(loop, len(searchUrls))
+                    # Avoid files
+                    if not sUrl[0].endswith("/"):
+                        searchUrls.remove(sUrl)
+                        continue
                     self.htmlParser.resetParent()
                     self.htmlParser.resetChildren()
                     self.htmlParser.resetChild()
@@ -181,10 +188,10 @@ class WorkerSearchManager(QgsTask):
                         # print('feed1', sUrl[0])
                         # Set timeout for requests
                         socket.setdefaulttimeout(15)
-                        self.htmlParser.feed(http.client.parse_headers(urllib.request.urlopen(sUrl[0])).as_string())
+                        response = urllib.request.urlopen(sUrl[0])
+                        self.htmlParser.feed(response.read().decode("utf-8", errors="ignore"))
                         # Set timeout for requests to default
                         socket.setdefaulttimeout(None)
-                        # print('feed1 ok', sUrl[0])
                     except (
                         urllib.error.HTTPError,
                         socket.timeout,
@@ -199,9 +206,8 @@ class WorkerSearchManager(QgsTask):
                             # print('feed2', sUrl[0])
                             # Set timeout for requests
                             socket.setdefaulttimeout(15)
-                            self.htmlParser.feed(
-                                http.client.parse_headers(urllib.request.urlopen(sUrl[0])).as_string()
-                            )
+                            response = urllib.request.urlopen(sUrl[0])
+                            self.htmlParser.feed(response.read().decode("utf-8", errors="ignore"))
                             # Set timeout for requests to default
                             socket.setdefaulttimeout(None)
                             # print('feed2 ok', sUrl[0])
@@ -225,6 +231,8 @@ class WorkerSearchManager(QgsTask):
                     children = self.htmlParser.getChildren()
                     if children:
                         for child in children:
+                            if child[0] == "https://www.ibge.gov.br/":
+                                continue
                             searchUrls.append([sUrl[0] + child[0], child[1]])
                             if self.matchContains:
                                 if self.txtSearch.lower() in child[0].lower():
@@ -259,9 +267,7 @@ class WorkerSearchManager(QgsTask):
 
         self.processResult.emit(
             [
-                self.tr("Search completed with {match} product(s) found and {fails} fails.").format(
-                    match=len(matchUrl), fails=fails
-                ),
+                self.tr(f"Search completed with {len(matchUrl)} product(s) found and {fails} fails."),
                 Qgis.Success,
                 self.exception,
                 matchUrl,

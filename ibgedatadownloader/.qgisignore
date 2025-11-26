@@ -1,3 +1,13 @@
+# .qgisignore - Arquivos a excluir no deploy do plugin QGIS
+#
+# Este arquivo é usado pelo script deploy_qgis.bat para determinar quais arquivos
+# NÃO devem ser copiados para a pasta de plugins do QGIS.
+#
+# Nome ".qgisignore" em vez de ".gitignore" evita conflitos com o git e permite
+# que o arquivo seja versionado sem afetar o repositório principal.
+#
+# Ver também: scripts/deploy_qgis.bat
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -127,3 +137,13 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Arquivos de desenvolvimento (não incluir no deploy QGIS)
+test/
+*.md
+Makefile
+*.pro
+*.ts
+pb_tool.cfg
+pylintrc
+help/

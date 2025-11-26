@@ -21,10 +21,14 @@ from html.parser import HTMLParser
 
 
 class MyHTMLParser(HTMLParser):
-    """Personalizes HTML parser"""
+    """Personalizes HTML parser to extract directory listings from IBGE FTP servers."""
 
     def __init__(self):
-        """Constructor."""
+        """Initialize the HTML parser.
+
+        Sets up attributes to track parent/child relationships in HTML structure,
+        specifically for parsing FTP directory listings.
+        """
 
         # Mother class constructor HTMLParser (subclass)
         super().__init__()
@@ -39,7 +43,13 @@ class MyHTMLParser(HTMLParser):
         self.trElement = False
 
     def handle_starttag(self, tag, attrs):
-        """Overrides to feed parent and child"""
+        """Handle HTML start tags.
+
+        Extracts parent and child URLs from anchor tags.
+
+        :param tag: The name of the tag being processed
+        :param attrs: List of (name, value) pairs containing the tag's attributes
+        """
 
         if tag == "tr":
             self.trElement = True
@@ -58,7 +68,12 @@ class MyHTMLParser(HTMLParser):
             # print(tag, self.child)
 
     def handle_endtag(self, tag):
-        """Overrides to feed children and reset child"""
+        """Handle HTML end tags.
+
+        Closes table rows and appends completed child entries to the children list.
+
+        :param tag: The name of the tag being closed
+        """
 
         if tag == "tr":
             self.trElement = False
@@ -70,7 +85,12 @@ class MyHTMLParser(HTMLParser):
             # print(tag, self.trElement)
 
     def handle_data(self, data):
-        """Overrides to feed information about child"""
+        """Handle text data within HTML tags.
+
+        Extracts metadata (dates and file sizes) from the HTML content using regex patterns.
+
+        :param data: The text content to process
+        """
 
         # Remove white spaces at start / end of the string
         data = data.lstrip().rstrip()
@@ -95,27 +115,54 @@ class MyHTMLParser(HTMLParser):
                 self.child.append(f"{data} B")
             # print(self.child)
 
+    def error(self, message):
+        """Handle parsing errors from HTMLParser.
+
+        Logs error details and continues parsing to handle malformed HTML gracefully.
+
+        :param message: Error message from the parser
+        """
+        # Print error details for debugging
+        print(f"HTMLParser error: {message}")
+        print(f"Raw data around error: {self.rawdata[:500]}")
+        # Silently ignore the error to continue parsing
+
     def getChildren(self):
-        """Returns childs"""
+        """Return the list of child entries parsed from HTML.
+
+        :return: List of child entries, or None if no children were found
+        """
 
         return self.children if self.children else None
 
     def getParent(self):
-        """Returns parent"""
+        """Return the parent URL extracted from HTML.
+
+        :return: The parent URL string, or None if not set
+        """
 
         return self.parent
 
     def resetChild(self):
-        """Resets child attribute"""
+        """Reset the child attribute to an empty list.
+
+        Called after a child entry is complete and added to children list.
+        """
 
         self.child = []
 
     def resetChildren(self):
-        """Resets children attribute"""
+        """Reset the children list to empty.
+
+        Clears all previously parsed child entries.
+        """
 
         self.children = []
 
     def resetParent(self):
-        """Resets parent attribute"""
+        """Reset the parent attribute to None.
+
+        Clears the current parent URL.
+        """
 
         self.parent = None

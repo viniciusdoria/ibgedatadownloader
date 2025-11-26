@@ -119,9 +119,6 @@ warn_unused_ignores = true
 [tool.pylint.messages_control]
 disable = [
   "missing-module-docstring",      # C0114
-  "missing-class-docstring",       # C0115
-  "missing-function-docstring",    # C0116
-  "line-too-long",                 # C0301
   "wrong-import-position",         # C0413
   "import-outside-toplevel",       # C0415
   "import-error",                  # E0401
