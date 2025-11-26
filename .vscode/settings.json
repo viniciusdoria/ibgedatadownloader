@@ -47,7 +47,7 @@
   "terminal.integrated.env.windows": {
     "OSGEO4W_ROOT": "${env:ProgramFiles}\\QGIS 3.40.12",
     // Path
-    "PATH": "${env:ProgramFiles}\\QGIS 3.40.12\\apps\\qgis-ltr\\bin;${env:ProgramFiles}\\QGIS 3.40.12\\apps\\grass\\grass84\\lib;${env:ProgramFiles}\\QGIS 3.40.12\\apps\\grass\\grass84\\bin;${env:ProgramFiles}\\QGIS 3.40.12\\apps\\qt5\\bin;${env:ProgramFiles}\\QGIS 3.40.12\\apps\\Python39\\Scripts;${env:ProgramFiles}\\QGIS 3.40.12\\bin;${env:Path}",
+    "PATH": "${env:ProgramFiles}\\QGIS 3.40.12\\apps\\qgis-ltr\\bin;${env:ProgramFiles}\\QGIS 3.40.12\\apps\\grass\\grass84\\lib;${env:ProgramFiles}\\QGIS 3.40.12\\apps\\grass\\grass84\\bin;${env:ProgramFiles}\\QGIS 3.40.12\\apps\\qt5\\bin;${env:ProgramFiles}\\QGIS 3.40.12\\apps\\Python312\\Scripts;${env:ProgramFiles}\\QGIS 3.40.12\\bin;${env:Path}",
     // Python
     "PYTHONPATH": "${env:ProgramFiles}\\QGIS 3.40.12\\apps\\qgis-ltr\\python;${env:PYTHONPATH}",
     // GDAL
