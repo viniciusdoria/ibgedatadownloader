@@ -2,7 +2,7 @@
 
 chcp 65001>nul
 
-set QGIS_PYTHON=%OSGEO4W_ROOT%\apps\Python39\python.exe
+set QGIS_PYTHON=%OSGEO4W_ROOT%\apps\Python312\python.exe
 
 :: Ler diretório de destino do ambiente virtual da linha de comando
 :: Se nenhum argumento foi forncecido, usar o nome padrão: .venv

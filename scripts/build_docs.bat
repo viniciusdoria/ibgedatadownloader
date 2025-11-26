@@ -20,7 +20,7 @@ if errorlevel 9009 (
 	echo.O comando 'sphinx-build' não foi encontrado. Certifique-se de que as dependências
 	echo.de documentação estejam instaladas no Python do QGIS, não no ambiente virtual:
 	echo.
-	echo."%OSGEO4W_ROOT%\apps\Python39\python.exe" -m pip install -U --user -r .\requirements\documentation.txt
+	echo."%OSGEO4W_ROOT%\apps\Python312\python.exe" -m pip install -U --user -r .\requirements\documentation.txt
 	echo.
 	exit /b 1
 )
