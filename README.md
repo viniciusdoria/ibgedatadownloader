@@ -35,7 +35,3 @@ Para mais detalhes sobre o processo de tradução, consulte o arquivo `ibgedatad
 ## 🤝 Contribuições
 
 Contribuições são muito bem-vindas! Se você tem sugestões, encontrou um bug ou deseja adicionar uma nova funcionalidade, sinta-se à vontade para abrir uma *issue* ou enviar um *pull request*.
-
-______________________________________________________________________
-
-Feito com ❤️ para a comunidade de geoprocessamento brasileira.
