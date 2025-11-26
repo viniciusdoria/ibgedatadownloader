@@ -41,16 +41,12 @@ def main():
 
     # Define os mesmos apelidos usados no .pth
     gdal = os.path.join("apps", "gdal")
-    grass = os.path.join(
-        "apps", "grass", "grass84"
-    )  # Usando grass84 conforme solicitado
+    grass = os.path.join("apps", "grass", "grass84")
     qgis = os.path.join("apps", "qgis-ltr")
     qt = os.path.join("apps", "qt5")
 
     # Constrói o caminho raiz do QGIS (OSGEO4W_ROOT)
-    osgeo4w_root = os.path.normcase(
-        os.path.normpath(os.path.join(program_files, "QGIS 3.40.12"))
-    )
+    osgeo4w_root = os.path.normcase(os.path.normpath(os.path.join(program_files, "QGIS 3.40.12")))
 
     # 2. Constrói a lista de caminhos a partir das variáveis de ambiente
     # Apenas os que representam caminhos são incluídos

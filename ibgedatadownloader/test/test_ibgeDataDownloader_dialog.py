@@ -48,6 +48,6 @@ class IbgeDataDownloaderDialogTest(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.makeSuite(IbgeDataDownloaderDialogTest)
+    suite = unittest.defaultTestLoader.loadTestsFromTestCase(IbgeDataDownloaderDialogTest)
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
