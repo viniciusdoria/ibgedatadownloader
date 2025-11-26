@@ -4,6 +4,8 @@
 
 Este plugin foi criado para facilitar a vida de geógrafos, urbanistas, pesquisadores e qualquer pessoa que utilize o QGIS e precise de dados oficiais do Brasil. Com o IBGE Data Downloader, você pode buscar, visualizar e baixar camadas de dados diretamente do [Instituto Brasileiro de Geografia e Estatística (IBGE)](https://www.ibge.gov.br/) para dentro do seu projeto no QGIS, de forma rápida e intuitiva.
 
+> **Aviso:** Este é um projeto independente e não possui vínculo oficial com o Instituto Brasileiro de Geografia e Estatística (IBGE).
+
 ## 🎯 Finalidade
 
 O IBGE é a principal fonte de dados geográficos e estatísticos do Brasil, oferecendo uma vasta gama de informações essenciais para análises espaciais, planejamento urbano e regional, estudos ambientais e muito mais. No entanto, navegar pelos diversos portais e serviços do IBGE para encontrar e baixar os dados corretos pode ser uma tarefa demorada.
