@@ -1,15 +1,24 @@
 {
   "recommendations": [
+    "charliermarsh.ruff",
     "davidanson.vscode-markdownlint",
-    "donjayamanne.python-environment-manager",
     "eamodio.gitlens",
     "editorconfig.editorconfig",
-    "kevinrose.vsc-python-indent",
     "formulahendry.code-runner",
     "github.vscode-pull-request-github",
     "mhutchie.git-graph",
-    "ms-python.python",
-    "seanwu.vscode-qt-for-python",
-    "tamasfe.even-better-toml"
+    "ms-python.black-formatter",
+    "ms-python.debugpy",
+    "ms-python.flake8",
+    "ms-python.isort",
+    "ms-python.mypy-type-checker",
+    "ms-python.pylint",
+    "ms-python.vscode-pylance",
+    "ms-python.vscode-python-envs",
+    "njpwerner.autodocstring",
+    "ritwickdey.LiveServer",
+    "swyddfa.esbonio",
+    "tamasfe.even-better-toml",
+    "theqtcompany.qt"
   ]
 }
