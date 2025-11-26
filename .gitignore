@@ -125,13 +125,14 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Ignorar tudo do diretório .venv, exceto o arquivo .venv/Lib/site-packages/qgis.pth
+# Ignorar tudo do diretório .venv, exceto arquivos de configuração específicos
 .venv/*
 !.venv/Lib
 .venv/Lib/*
 !.venv/Lib/site-packages
 .venv/Lib/site-packages/*
 !.venv/Lib/site-packages/qgis.pth
+!.venv/Lib/site-packages/sitecustomize.py
 
 # --- CUSTOM ---
 gdalwmscache/
