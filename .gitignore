@@ -132,7 +132,6 @@ dmypy.json
 !.venv/Lib/site-packages
 .venv/Lib/site-packages/*
 !.venv/Lib/site-packages/qgis.pth
-!.venv/Lib/site-packages/sitecustomize.py
 
 # --- CUSTOM ---
 gdalwmscache/
