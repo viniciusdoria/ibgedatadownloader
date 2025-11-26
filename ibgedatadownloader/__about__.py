@@ -12,7 +12,7 @@ import unicodedata
 from configparser import ConfigParser
 from datetime import date
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Optional, Union
 
 # ############################################################################
 # ########## Globals ###############

@@ -49,9 +49,6 @@ from .HelpDialog import HelpDialog
 from .ibgeDataDownloader_dialog import IbgeDataDownloaderDialog
 from .MyHTMLParser import MyHTMLParser
 from .MyProgressDialog import MyProgressDialog
-
-# Initialize Qt resources from file resources.py
-from .resources import *
 from .WorkerDownloadManager import WorkerDownloadManager
 from .WorkerSearchManager import WorkerSearchManager
 
@@ -245,7 +242,7 @@ class IbgeDataDownloader:
         dialog.setAutoReset(False)
         dialog.canceled.connect(self.canceledProgressDialog)
         for i in dialog.children():
-            if type(i) == QPushButton:
+            if isinstance(i, QPushButton):
                 self.dlgBarCancelButton = i
                 break
         return dialog, progressBar
