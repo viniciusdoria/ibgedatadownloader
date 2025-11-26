@@ -28,6 +28,7 @@ import socket
 import tarfile
 import urllib
 import zipfile
+from pathlib import Path
 
 from qgis.core import Qgis, QgsApplication, QgsProject, QgsVectorLayer
 from qgis.PyQt.QtCore import QCoreApplication, QModelIndex, QSettings, Qt, QTranslator
@@ -43,14 +44,13 @@ from qgis.PyQt.QtWidgets import (
     QToolButton,
 )
 
-from .HelpDialog import HelpDialog
-
-# Import the code for the dialog
-from .ibgeDataDownloader_dialog import IbgeDataDownloaderDialog
-from .MyHTMLParser import MyHTMLParser
-from .MyProgressDialog import MyProgressDialog
-from .WorkerDownloadManager import WorkerDownloadManager
-from .WorkerSearchManager import WorkerSearchManager
+from ibgedatadownloader.__about__ import DIR_PLUGIN_ROOT
+from ibgedatadownloader.HelpDialog import HelpDialog
+from ibgedatadownloader.ibgeDataDownloader_dialog import IbgeDataDownloaderDialog
+from ibgedatadownloader.MyHTMLParser import MyHTMLParser
+from ibgedatadownloader.MyProgressDialog import MyProgressDialog
+from ibgedatadownloader.WorkerDownloadManager import WorkerDownloadManager
+from ibgedatadownloader.WorkerSearchManager import WorkerSearchManager
 
 
 class IbgeDataDownloader:
@@ -66,13 +66,11 @@ class IbgeDataDownloader:
         """
         # Save reference to the QGIS interface
         self.iface = iface
-        # initialize plugin directory
-        self.plugin_dir = os.path.dirname(__file__)
         # initialize locale
         locale = QSettings().value("locale/userLocale")[0:2]
-        locale_path = os.path.join(self.plugin_dir, "i18n", f"IbgeDataDownloader_{locale}.qm")
+        locale_path = Path(DIR_PLUGIN_ROOT / "i18n" / f"IbgeDataDownloader_{locale}.qm")
 
-        if os.path.exists(locale_path):
+        if locale_path.exists() and locale_path.is_file():
             self.translator = QTranslator()
             self.translator.load(locale_path)
             QCoreApplication.installTranslator(self.translator)
@@ -86,14 +84,14 @@ class IbgeDataDownloader:
         self.firstStart = None
 
         # Plugin icon
-        self.pluginIcon = QIcon(":/plugins/ibgedatadownloader/icon.png")
+        self.pluginIcon = QIcon(str(DIR_PLUGIN_ROOT / "icon.png"))
 
         # Access to QGIS status bar and progress button
         self.statusBar = self.iface.statusBarIface()
         for i in self.statusBar.children():
-            if type(i) == QToolButton:
+            if isinstance(i, QToolButton):
                 for j in i.children():
-                    if type(j) == QProgressBar:
+                    if isinstance(j, QProgressBar):
                         self.qgisProgressButton = i
                         break
 
@@ -105,9 +103,9 @@ class IbgeDataDownloader:
         self.msgBar = self.iface.messageBar()
         self.taskManager = QgsApplication.taskManager()
         self.settings = QSettings()
-        self.htmlParser = MyHTMLParser()
-        self.geobaseUrl = "https://geoftp.ibge.gov.br/"
-        self.statbaseUrl = "https://ftp.ibge.gov.br/"
+        self.html_parser = MyHTMLParser()
+        self.geobase_url = "https://geoftp.ibge.gov.br/"
+        self.statbase_url = "https://ftp.ibge.gov.br/"
         self.itemsExpanded = []
         self.selectedProductsUrl = []
         self.selectedSearch = ""
@@ -206,7 +204,7 @@ class IbgeDataDownloader:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = ":/plugins/ibgeDataDownloader/icon.png"
+        icon_path = str(DIR_PLUGIN_ROOT / "icon.png")
         self.add_action(
             icon_path,
             text=self.tr("IBGE Data Downloader"),
@@ -431,13 +429,13 @@ class IbgeDataDownloader:
         if self.dlg.tabWidget.currentIndex() == 0:
             if clear:
                 self.statSelectionModel.clear()
-            baseUrl = self.geobaseUrl
+            baseUrl = self.geobase_url
             treeView = self.dlg.treeView_Geo
             selectionModel = self.geoSelectionModel
         else:
             if clear:
                 self.geoSelectionModel.clear()
-            baseUrl = self.statbaseUrl
+            baseUrl = self.statbase_url
             treeView = self.dlg.treeView_Stat
             selectionModel = self.statSelectionModel
 
@@ -550,13 +548,16 @@ class IbgeDataDownloader:
             # print('/'.join(parents))
             url = self.getItemUrl(modelIndex)
             # print(url)
-            self.htmlParser.resetParent()
-            self.htmlParser.resetChildren()
-            self.htmlParser.resetChild()
+            self.html_parser.resetParent()
+            self.html_parser.resetChildren()
+            self.html_parser.resetChild()
             # Set timeout for requests
             socket.setdefaulttimeout(15)
             try:
-                self.htmlParser.feed(http.client.parse_headers(urllib.request.urlopen(url)).as_string())
+                response = urllib.request.urlopen(url)
+                self.html_parser.feed(response.read().decode("utf-8", errors="ignore"))
+                # Set timeout for requests to default
+                socket.setdefaulttimeout(None)
             except socket.timeout as e:
                 self.msgBar.pushMessage(
                     self.tr("Warning"),
@@ -567,15 +568,16 @@ class IbgeDataDownloader:
                 )
             # Set timeout for requests to default
             socket.setdefaulttimeout(None)
-            children = self.htmlParser.getChildren()
+            children = self.html_parser.getChildren()
 
             # Add children to the tree
             # print(children)
             if children:
                 for child in children:
-                    # print('adicionando {} ao item {}'.format(child.replace('/', ''), modelIndex.data()))
-                    child[0] = child[0].replace("/", "")
-                    self.addTreeViewParentChildItem(treeView, modelIndex, child)
+                    if child[0] != "https://www.ibge.gov.br/":
+                        print("adicionando {} ao item {}".format(child[0].replace("/", ""), modelIndex.data()))
+                        child[0] = child[0].replace("/", "")
+                        self.addTreeViewParentChildItem(treeView, modelIndex, child)
 
             # Add the item to expanded list
             self.itemsExpanded.append(modelIndex)
@@ -736,7 +738,7 @@ class IbgeDataDownloader:
         self.clearItemsHighlighted()
 
         # Search params
-        root = self.geobaseUrl if self.dlg.radioButton_SearchGeo.isChecked() else self.statbaseUrl
+        root = self.geobase_url if self.dlg.radioButton_SearchGeo.isChecked() else self.statbase_url
         text = self.dlg.lineEdit_SearchWord.text()
         matchContains = self.dlg.checkBox_SearchContains.isChecked()
         matchScore = self.dlg.doubleSpinBox_MatchValue.value()
@@ -796,8 +798,8 @@ class IbgeDataDownloader:
         self.dlg.setWindowIcon(self.pluginIcon)
 
         # Add top parent to the tree
-        self.addTreeViewParentChildItem(self.dlg.treeView_Geo, os.path.basename(os.path.normpath(self.geobaseUrl)))
-        self.addTreeViewParentChildItem(self.dlg.treeView_Stat, os.path.basename(os.path.normpath(self.statbaseUrl)))
+        self.addTreeViewParentChildItem(self.dlg.treeView_Geo, os.path.basename(os.path.normpath(self.geobase_url)))
+        self.addTreeViewParentChildItem(self.dlg.treeView_Stat, os.path.basename(os.path.normpath(self.statbase_url)))
 
         # Adjusting headers size mode
         self.dlg.treeView_Geo.header().setSectionResizeMode(QHeaderView.ResizeToContents)
