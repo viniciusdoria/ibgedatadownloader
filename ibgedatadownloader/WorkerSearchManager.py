@@ -15,6 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+
 import http
 import http.client
 import socket
@@ -86,10 +87,18 @@ class WorkerSearchManager(QgsTask):
             )
         elif self.exception != []:
             self.msgBar.pushMessage(
-                self.tr("Warning"), self.tr("Process partially completed."), Qgis.Warning, duration=0
+                self.tr("Warning"),
+                self.tr("Process partially completed."),
+                Qgis.Warning,
+                duration=0,
             )
         else:
-            self.msgBar.pushMessage(self.tr("Success"), self.tr("Process completed."), Qgis.Success, duration=0)
+            self.msgBar.pushMessage(
+                self.tr("Success"),
+                self.tr("Process completed."),
+                Qgis.Success,
+                duration=0,
+            )
 
     def run(self):
         """Principal method that is automatically called when the task runs."""
@@ -135,7 +144,11 @@ class WorkerSearchManager(QgsTask):
                             )
                         )
                 elif (
-                    SequenceMatcher(None, self.standardizeText(self.txtSearch), self.standardizeText(child[0])).ratio()
+                    SequenceMatcher(
+                        None,
+                        self.standardizeText(self.txtSearch),
+                        self.standardizeText(child[0]),
+                    ).ratio()
                     * 100
                     >= self.matchScore
                 ):
@@ -172,7 +185,11 @@ class WorkerSearchManager(QgsTask):
                         # Set timeout for requests to default
                         socket.setdefaulttimeout(None)
                         # print('feed1 ok', sUrl[0])
-                    except (urllib.error.HTTPError, socket.timeout, NotImplementedError):
+                    except (
+                        urllib.error.HTTPError,
+                        socket.timeout,
+                        NotImplementedError,
+                    ):
                         # print(e.code, e.reason, e.headers)
                         # print('tentando novamente em 5 segundos...')
                         # Set timeout for requests to default
@@ -188,7 +205,11 @@ class WorkerSearchManager(QgsTask):
                             # Set timeout for requests to default
                             socket.setdefaulttimeout(None)
                             # print('feed2 ok', sUrl[0])
-                        except (urllib.error.HTTPError, socket.timeout, NotImplementedError) as e:
+                        except (
+                            urllib.error.HTTPError,
+                            socket.timeout,
+                            NotImplementedError,
+                        ) as e:
                             # Set timeout for requests to default
                             socket.setdefaulttimeout(None)
                             # print(e.code, e.reason, e.headers)
@@ -215,7 +236,9 @@ class WorkerSearchManager(QgsTask):
                                     )
                             elif (
                                 SequenceMatcher(
-                                    None, self.standardizeText(self.txtSearch), self.standardizeText(child[0])
+                                    None,
+                                    self.standardizeText(self.txtSearch),
+                                    self.standardizeText(child[0]),
                                 ).ratio()
                                 * 100
                                 >= self.matchScore

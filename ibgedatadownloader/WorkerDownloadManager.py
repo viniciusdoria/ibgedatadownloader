@@ -15,6 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+
 import os
 import tarfile
 import urllib
@@ -38,7 +39,7 @@ class WorkerDownloadManager(QgsTask):
         """Constructor."""
 
         # Mother class constructor QgsTask (subclass)
-        super(WorkerDownloadManager, self).__init__(desc, flags=QgsTask.CanCancel)
+        super().__init__(desc, flags=QgsTask.CanCancel)
 
         # Saving references
         self.iface = iface
@@ -72,10 +73,18 @@ class WorkerDownloadManager(QgsTask):
             )
         elif self.exception != []:
             self.msgBar.pushMessage(
-                self.tr("Warning"), self.tr("Process partially completed."), Qgis.Warning, duration=0
+                self.tr("Warning"),
+                self.tr("Process partially completed."),
+                Qgis.Warning,
+                duration=0,
             )
         else:
-            self.msgBar.pushMessage(self.tr("Success"), self.tr("Process completed."), Qgis.Success, duration=0)
+            self.msgBar.pushMessage(
+                self.tr("Success"),
+                self.tr("Process completed."),
+                Qgis.Success,
+                duration=0,
+            )
 
     def run(self):
         """Principal method that is automatically called when the task runs."""

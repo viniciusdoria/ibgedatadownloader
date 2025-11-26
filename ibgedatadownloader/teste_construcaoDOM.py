@@ -1,7 +1,5 @@
 import http
-import time
 import urllib
-from html.entities import name2codepoint
 from html.parser import HTMLParser
 
 
@@ -12,7 +10,7 @@ class MyHTMLParser(HTMLParser):
     def __init__(self):
         """Constructor."""
         # Mother class constructor HTMLParser (subclass)
-        super(MyHTMLParser, self).__init__()
+        super().__init__()
         # Attribute that receives parent tree
         self.__parent__ = None
         # Attribute that receives childs tree

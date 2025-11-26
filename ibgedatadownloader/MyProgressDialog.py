@@ -15,6 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+
 from qgis.PyQt.QtWidgets import QProgressDialog
 
 
@@ -25,7 +26,7 @@ class MyProgressDialog(QProgressDialog):
         """Constructor."""
 
         # Mother class constructor QProgressDialog (subclass)
-        super(MyProgressDialog, self).__init__()
+        super().__init__()
 
         # Attribute that keeps the dialog opened
         self.__close__ = False
@@ -39,6 +40,6 @@ class MyProgressDialog(QProgressDialog):
         """Overrides closeEvent (closing dialog)"""
 
         if self.__close__:
-            super(MyProgressDialog, self).closeEvent(event)
+            super().closeEvent(event)
         else:
             event.ignore()

@@ -15,6 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+
 import os
 
 from qgis.PyQt.QtCore import QSettings
@@ -28,7 +29,7 @@ class HelpDialog(QDialog):
         """Constructor."""
 
         # Mother class constructor QgsTask (subclass)
-        super(HelpDialog, self).__init__(parent)
+        super().__init__(parent)
 
         # initialize file directory
         self.fileDir = os.path.dirname(__file__)

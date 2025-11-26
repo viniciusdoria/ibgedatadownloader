@@ -20,6 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+
 import http
 import http.client
 import os
@@ -72,7 +73,7 @@ class IbgeDataDownloader:
         self.plugin_dir = os.path.dirname(__file__)
         # initialize locale
         locale = QSettings().value("locale/userLocale")[0:2]
-        locale_path = os.path.join(self.plugin_dir, "i18n", "IbgeDataDownloader_{}.qm".format(locale))
+        locale_path = os.path.join(self.plugin_dir, "i18n", f"IbgeDataDownloader_{locale}.qm")
 
         if os.path.exists(locale_path):
             self.translator = QTranslator()
@@ -210,7 +211,10 @@ class IbgeDataDownloader:
 
         icon_path = ":/plugins/ibgeDataDownloader/icon.png"
         self.add_action(
-            icon_path, text=self.tr("IBGE Data Downloader"), callback=self.run, parent=self.iface.mainWindow()
+            icon_path,
+            text=self.tr("IBGE Data Downloader"),
+            callback=self.run,
+            parent=self.iface.mainWindow(),
         )
 
         # will be set False in run()
@@ -352,7 +356,8 @@ class IbgeDataDownloader:
 
             if len(self.pluginResult[3]) > 0:
                 self.dlgBar, self.progressBar = self.progressDialog(
-                    0, self.tr("Adding products to Products Tree. This may take several minutes...")
+                    0,
+                    self.tr("Adding products to Products Tree. This may take several minutes..."),
                 )
                 self.progressBar.setRange(0, 0)
                 self.dlgBar.show()
@@ -386,7 +391,10 @@ class IbgeDataDownloader:
                                         treeView.expand(modelIndex)
                                         # Scroll to first item found
                                         if n == 0:
-                                            treeView.scrollTo(modelIndex, QAbstractItemView.PositionAtTop)
+                                            treeView.scrollTo(
+                                                modelIndex,
+                                                QAbstractItemView.PositionAtTop,
+                                            )
 
                 self.dlgBar.setClose(True)
                 self.dlgBar.close()
@@ -394,7 +402,11 @@ class IbgeDataDownloader:
         self.msgBar.clearWidgets()
         if self.pluginResult[2] != []:
             self.msgBar.pushMessage(
-                msgType, self.pluginResult[0], "\n\n".join(self.pluginResult[2]), self.pluginResult[1], duration=0
+                msgType,
+                self.pluginResult[0],
+                "\n\n".join(self.pluginResult[2]),
+                self.pluginResult[1],
+                duration=0,
             )
         else:
             self.msgBar.pushMessage(msgType, self.pluginResult[0], self.pluginResult[1], duration=20)
@@ -443,11 +455,7 @@ class IbgeDataDownloader:
             # Gets all parents and the item to create the URL
             parents = (
                 [modelIndex.data()]
-                if [
-                    "/{}".format(modelIndex.data())
-                    if os.path.splitext(modelIndex.data())[1] == ""
-                    else modelIndex.data()
-                ][0]
+                if [f"/{modelIndex.data()}" if os.path.splitext(modelIndex.data())[1] == "" else modelIndex.data()][0]
                 not in baseUrl
                 else []
             )
@@ -455,7 +463,7 @@ class IbgeDataDownloader:
             # print(modelIndex.parent(), modelIndex.parent().data())
             while (
                 parent.data() is not None
-                and ["/{}".format(parent.data()) if os.path.splitext(parent.data())[1] == "" else parent.data()][0]
+                and [f"/{parent.data()}" if os.path.splitext(parent.data())[1] == "" else parent.data()][0]
                 not in baseUrl
             ):
                 parents.insert(0, parent.data())
@@ -591,7 +599,13 @@ class IbgeDataDownloader:
         model = treeView.model()
         if not model:
             model = QStandardItemModel(0, 3)
-            model.setHorizontalHeaderLabels([self.tr("Products Tree"), self.tr("File size"), self.tr("Last modified")])
+            model.setHorizontalHeaderLabels(
+                [
+                    self.tr("Products Tree"),
+                    self.tr("File size"),
+                    self.tr("Last modified"),
+                ]
+            )
             treeView.setModel(model)
 
         # Creates standard empty item
@@ -662,7 +676,22 @@ class IbgeDataDownloader:
 
         # Check if text respect standard structure
         if (
-            not any(c in text for c in (" ", ",", ".", ";", "?", "zip", "tar", "shp", "xls", "ods", "pdf"))
+            not any(
+                c in text
+                for c in (
+                    " ",
+                    ",",
+                    ".",
+                    ";",
+                    "?",
+                    "zip",
+                    "tar",
+                    "shp",
+                    "xls",
+                    "ods",
+                    "pdf",
+                )
+            )
             and text != ""
         ):
             self.dlg.pushButton_Search.setEnabled(True)
@@ -736,9 +765,12 @@ class IbgeDataDownloader:
         self.threadTask = WorkerSearchManager(
             self.iface,
             taskDesc,
-            self.selectedSearch
-            if self.dlg.checkBox_SearchSelectedOnly.isEnabled() and self.dlg.checkBox_SearchSelectedOnly.isChecked()
-            else root,
+            (
+                self.selectedSearch
+                if self.dlg.checkBox_SearchSelectedOnly.isEnabled()
+                and self.dlg.checkBox_SearchSelectedOnly.isChecked()
+                else root
+            ),
             text,
             matchContains,
             matchScore,
@@ -836,7 +868,12 @@ class IbgeDataDownloader:
         # Preparing product download
         self.dlgBar, self.progressBar = self.progressDialog(0, self.tr("Downloading data..."))
         self.dlgBar.show()
-        self.msgBar.pushMessage(self.tr("Processing"), self.tr("Working on selected data..."), Qgis.Info, duration=0)
+        self.msgBar.pushMessage(
+            self.tr("Processing"),
+            self.tr("Working on selected data..."),
+            Qgis.Info,
+            duration=0,
+        )
 
         # Instantiate the background worker and connects slots to signals
         taskDesc = self.tr("Processing selected data.")

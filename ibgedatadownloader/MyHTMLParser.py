@@ -15,6 +15,7 @@
  *                                                                         *
  ***************************************************************************/
 """
+
 import re
 from html.parser import HTMLParser
 
@@ -26,7 +27,7 @@ class MyHTMLParser(HTMLParser):
         """Constructor."""
 
         # Mother class constructor HTMLParser (subclass)
-        super(MyHTMLParser, self).__init__()
+        super().__init__()
 
         # Attribute that receive parent tree
         self.parent = None
@@ -89,9 +90,9 @@ class MyHTMLParser(HTMLParser):
         if match and self.child != []:
             # Adds a space between value and unit and a B as sufix
             if matchType == 1:
-                self.child.append("{} {}B".format(data[:-1], data[-1]))
+                self.child.append(f"{data[:-1]} {data[-1]}B")
             elif matchType == 2:
-                self.child.append("{} B".format(data))
+                self.child.append(f"{data} B")
             # print(self.child)
 
     def getChildren(self):

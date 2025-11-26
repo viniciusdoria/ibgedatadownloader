@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """This script uploads a plugin package to the plugin repository.
-        Authors: A. Pasotti, V. Picavet
-        git sha              : $TemplateVCSFormat
+Authors: A. Pasotti, V. Picavet
+git sha              : $TemplateVCSFormat
 """
 
 import getpass
@@ -65,15 +65,37 @@ def hide_password(url, start=6):
     """
     start_position = url.find(":", start) + 1
     end_position = url.find("@")
-    return "%s%s%s" % (url[:start_position], "*" * (end_position - start_position), url[end_position:])
+    return "{}{}{}".format(
+        url[:start_position],
+        "*" * (end_position - start_position),
+        url[end_position:],
+    )
 
 
 if __name__ == "__main__":
     parser = OptionParser(usage="%prog [options] plugin.zip")
-    parser.add_option("-w", "--password", dest="password", help="Password for plugin site", metavar="******")
-    parser.add_option("-u", "--username", dest="username", help="Username of plugin site", metavar="user")
+    parser.add_option(
+        "-w",
+        "--password",
+        dest="password",
+        help="Password for plugin site",
+        metavar="******",
+    )
+    parser.add_option(
+        "-u",
+        "--username",
+        dest="username",
+        help="Username of plugin site",
+        metavar="user",
+    )
     parser.add_option("-p", "--port", dest="port", help="Server port to connect to", metavar="80")
-    parser.add_option("-s", "--server", dest="server", help="Specify server name", metavar="plugins.qgis.org")
+    parser.add_option(
+        "-s",
+        "--server",
+        dest="server",
+        help="Specify server name",
+        metavar="plugins.qgis.org",
+    )
     options, args = parser.parse_args()
     if len(args) != 1:
         print("Please specify zip file.\n")
