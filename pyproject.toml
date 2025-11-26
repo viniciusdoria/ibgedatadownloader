@@ -68,7 +68,7 @@ pack = [
 ]
 
 [project.urls]
-Repository = "https://github.com/VEMD/ibgedatadownloader"
+Repository = "https://github.com/viniciusdoria/ibgedatadownloader"
 
 [tool.setuptools.dynamic]
 version = {attr = "ibgedatadownloader.__about__.__version__"}

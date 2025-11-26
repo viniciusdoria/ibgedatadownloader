@@ -8,13 +8,16 @@ on:
 env:
   PYTHON_VERSION: 3.12
 
+permissions:
+  contents: write  # Permite criar releases e tags
+
 jobs:
   release:
     runs-on: ubuntu-latest
 
     steps:
       - name: Get source code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4  # Atualizado para v4 (padrão atual)
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -32,26 +35,14 @@ jobs:
       - name: Install Python requirements
         run: |
           python -m pip install -U pip setuptools wheel
-          python -m pip install -U -r requirements/packaging.txt
+          # Garante que qgis-plugin-ci e dependências estejam instaladas
+          python -m pip install qgis-plugin-ci
+          if [ -f requirements/packaging.txt ]; then pip install -r requirements/packaging.txt; fi
 
-      - name: Package plugin
-        run: qgis-plugin-ci package ${GITHUB_REF/refs\/tags\//}
-
-      - name: Get current changelog for ${GITHUB_REF/refs\/tags\//}
-        run: qgis-plugin-ci changelog ${GITHUB_REF/refs\/tags\//} >> release.md
-
-      - name: Create release on GitHub
-        uses: ncipollo/release-action@v1.14.0
-        with:
-          artifacts: "ibgedatadownloader.zip"
-          bodyFile: release.md
-          generateReleaseNotes: true
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Deploy plugin
+      - name: Deploy plugin (Release & Repo)
         run: >-
           qgis-plugin-ci
           release ${GITHUB_REF/refs\/tags\//}
           --github-token ${{ secrets.GITHUB_TOKEN }}
-          --allow-uncommitted-changes
-          --create-plugin-repo
+          --osgeo-username ${{ secrets.OSGEO_USERNAME }}
+          --osgeo-password ${{ secrets.OSGEO_PASSWORD }}
