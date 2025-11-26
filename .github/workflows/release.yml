@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Get source code
-        uses: actions/checkout@v4  # Atualizado para v4 (padrão atual)
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -35,14 +35,25 @@ jobs:
       - name: Install Python requirements
         run: |
           python -m pip install -U pip setuptools wheel
-          # Garante que qgis-plugin-ci e dependências estejam instaladas
           python -m pip install qgis-plugin-ci
           if [ -f requirements/packaging.txt ]; then pip install -r requirements/packaging.txt; fi
+
+      # --- PASSO DE DEBUG (Corrigi a indentação aqui) ---
+      - name: Debug - Listar arquivos e Repo
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ls -R
+          echo "----------------------------------------"
+          echo "Tentando acessar informações do repositório..."
+          gh repo view viniciusdoria/ibgedatadownloader
+          echo "----------------------------------------"
 
       - name: Deploy plugin (Release & Repo)
         run: >-
           qgis-plugin-ci
           release ${GITHUB_REF/refs\/tags\//}
           --github-token ${{ secrets.GITHUB_TOKEN }}
+          --create-plugin-repo
           --osgeo-username ${{ secrets.OSGEO_USERNAME }}
           --osgeo-password ${{ secrets.OSGEO_PASSWORD }}
