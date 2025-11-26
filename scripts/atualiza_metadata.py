@@ -1,12 +1,17 @@
-import configparser
+import toml
+from qgispluginci import changelog, utils
 
-from qgispluginci import changelog, parameters, utils
+with open("pyproject.toml", encoding="utf8") as fd:
+    config = toml.load(fd)
 
-config = configparser.ConfigParser()
-config.read("setup.cfg", encoding="utf-8")
+try:
+    latest = changelog.ChangelogParser().latest_version()
+except AttributeError as e:
+    msg = "Nenhuma versão no formato major.minor.patch foi encontrada no changelog."
+    raise Exception(msg) from e
 
 utils.replace_in_file(
-    f"{parameters.Parameters(dict(config.items('qgis-plugin-ci'))).plugin_path}/metadata.txt",
+    f"{config['tool']['qgis-plugin-ci']['plugin_path']}/metadata.txt",
     r"^version=.*$",
-    f"version={changelog.ChangelogParser().latest_version()}",
+    f"version={latest}",
 )
