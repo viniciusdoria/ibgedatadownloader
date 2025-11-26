@@ -38,7 +38,6 @@ jobs:
           python -m pip install qgis-plugin-ci
           if [ -f requirements/packaging.txt ]; then pip install -r requirements/packaging.txt; fi
 
-      # --- PASSO DE DEBUG (Corrigi a indentação aqui) ---
       - name: Debug - Listar arquivos e Repo
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
