@@ -3,13 +3,13 @@
 import os
 
 # Monkeypatch para os.add_dll_directory para evitar erro com '.'
-if hasattr(os, 'add_dll_directory'):
+if hasattr(os, "add_dll_directory"):
     _original_add_dll_directory = os.add_dll_directory
-    
+
     def patched_add_dll_directory(path):
         """Wrapper que filtra paths inválidos antes de adicionar"""
         # Ignorar caminho '.' (diretório atual)
-        if path == '.' or path == '.\\' or path == './':
+        if path == "." or path == ".\\" or path == "./":
             return
         # Ignorar caminhos vazios
         if not path or not str(path).strip():
@@ -23,6 +23,6 @@ if hasattr(os, 'add_dll_directory'):
             except (OSError, ValueError):
                 # Ignorar erros silenciosamente
                 pass
-    
+
     # Substituir a função original
     os.add_dll_directory = patched_add_dll_directory
