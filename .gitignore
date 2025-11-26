@@ -100,7 +100,7 @@ celerybeat-schedule
 
 # Environments
 .env
-.venv
+# .venv
 env/
 venv/
 ENV/
@@ -125,14 +125,18 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# Ignorar tudo do diretório .venv, exceto o arquivo .venv/Lib/site-packages/qgis.pth
+.venv/*
+!.venv/Lib
+.venv/Lib/*
+!.venv/Lib/site-packages
+.venv/Lib/site-packages/*
+!.venv/Lib/site-packages/qgis.pth
+
 # --- CUSTOM ---
 gdalwmscache/
 *.zip
 *.qm
 .qt_for_python/
-analiseDbColeta.py
-analiseRota.py
-atividades.txt
-sugestoes_mudanca.txt
 *.xlsx
 *.docx
