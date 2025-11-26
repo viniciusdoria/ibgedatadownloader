@@ -5,7 +5,7 @@
     {
       // Attaching to the debugging server running on QGIS side.
       "name": "Python: Remote Attach",
-      "type": "python",
+      "type": "debugpy",
       "request": "attach",
       "connect": {
         "host": "localhost",
@@ -13,8 +13,8 @@
       },
       "pathMappings": [
         {
-          "localRoot": "${workspaceFolder}/ibge_edicao_camadas",
-          "remoteRoot": "${env:AppData}/QGIS/QGIS3/profiles/default/python/plugins/ibge_edicao_camadas"
+          "localRoot": "${workspaceFolder}/ibgedatadownloader",
+          "remoteRoot": "${env:AppData}/QGIS/QGIS3/profiles/default/python/plugins/ibgedatadownloader"
         }
       ],
       "justMyCode": false,
@@ -22,7 +22,7 @@
     {
       // Make sure that tests can be debugged in VS Code even if using testing coverage.
       "name": "Debug Tests",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "console": "integratedTerminal",
       "justMyCode": false,
