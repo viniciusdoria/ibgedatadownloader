@@ -75,11 +75,6 @@ echo Instalando/atualizando debugpy...
 "%QGIS_PYTHON%" -m pip install --upgrade --user pip setuptools debugpy
 if %errorlevel% neq 0 exit /B %errorlevel%
 
-echo Instalando/atualizando dependências de documentação...
-
-"%QGIS_PYTHON%" -m pip install --upgrade --user -r .\requirements\documentation.txt
-if %errorlevel% neq 0 exit /B %errorlevel%
-
 echo Configurando git blame...
 
 git config blame.ignoreRevsFile .git-blame-ignore-revs

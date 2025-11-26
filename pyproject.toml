@@ -118,8 +118,6 @@ warn_unused_ignores = true
 
 [tool.pylint.messages_control]
 disable = [
-  "invalid-name",                  # C0103
-  "disallowed-name",               # C0104
   "missing-module-docstring",      # C0114
   "missing-class-docstring",       # C0115
   "missing-function-docstring",    # C0116
