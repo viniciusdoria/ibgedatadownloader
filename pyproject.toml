@@ -70,6 +70,15 @@ profile = "black"
 line_length = 119
 skip_gitignore = true
 
+[tool.ruff]
+line-length = 119
+target-version = "py312"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
 [tool.mypy]
 enable_error_code = ["ignore-without-code"]
 no_implicit_optional = true

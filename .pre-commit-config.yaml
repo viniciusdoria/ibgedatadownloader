@@ -71,7 +71,8 @@ repos:
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.14.6
-    hooks: []
+    hooks:
+      - id: ruff-format
 
   - repo: https://github.com/sphinx-contrib/sphinx-lint
     rev: v1.0.2
