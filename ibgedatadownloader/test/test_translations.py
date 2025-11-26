@@ -6,11 +6,12 @@
      (at your option) any later version.
 
 """
+
 from .utilities import get_qgis_app
 
 __author__ = "ismailsunni@yahoo.co.id"
 __date__ = "12/10/2011"
-__copyright__ = "Copyright 2012, Australia Indonesia Facility for " "Disaster Reduction"
+__copyright__ = "Copyright 2012, Australia Indonesia Facility for Disaster Reduction"
 import os
 import unittest
 
@@ -47,6 +48,6 @@ class SafeTranslationsTest(unittest.TestCase):
 
 
 if __name__ == "__main__":
-    suite = unittest.makeSuite(SafeTranslationsTest)
+    suite = unittest.defaultTestLoader.loadTestsFromTestCase(SafeTranslationsTest)
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
