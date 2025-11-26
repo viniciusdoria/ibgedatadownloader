@@ -52,6 +52,11 @@ echo Ativando o ambiente criado...
 call "%VENV_FOLDER%\Scripts\activate.bat"
 if %errorlevel% neq 0 exit /B %errorlevel%
 
+echo Copiando arquivo de correção sitecustomize.py...
+
+copy "%~dp0sitecustomize.py" "%VENV_FOLDER%\Lib\site-packages\sitecustomize.py"
+if %errorlevel% neq 0 exit /B %errorlevel%
+
 echo Ambiente virtual ativado. Instalando dependências de desenvolvimento...
 
 python -m pip install --upgrade pip setuptools uv
