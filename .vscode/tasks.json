@@ -17,6 +17,34 @@
         "kind": "build",
         "isDefault": true
       }
+    },
+    {
+      "label": "Criar ambiente virtual no workspace usando o Python do QGIS",
+      "type": "shell",
+      "windows": {
+        "command": "${workspaceFolder}\\scripts\\create_venv.bat"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      // "args": [
+      //   "${input:venvDir}"
+      // ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Atualizar dependências de desenvolvimento no ambiente local",
+      "type": "shell",
+      "windows": {
+        "command": "${workspaceFolder}\\scripts\\atualiza_pacotes.bat"
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      // "args": [
+      //   "${input:venvDir}"
+      // ],
+      "problemMatcher": []
     }
   ]
 }
