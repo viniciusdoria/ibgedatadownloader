@@ -68,11 +68,11 @@ class IbgeDataDownloader:
         self.iface = iface
         # initialize locale
         locale = QSettings().value("locale/userLocale")[0:2]
-        locale_path = Path(DIR_PLUGIN_ROOT / "i18n" / f"IbgeDataDownloader_{locale}.qm")
+        locale_path = Path(DIR_PLUGIN_ROOT / "i18n" / f"ibgeDataDownloader_{locale}.qm")
 
         if locale_path.exists() and locale_path.is_file():
             self.translator = QTranslator()
-            self.translator.load(locale_path)
+            self.translator.load(str(locale_path))
             QCoreApplication.installTranslator(self.translator)
 
         # Declare instance attributes
@@ -615,7 +615,7 @@ class IbgeDataDownloader:
             parentItem.appendRow([emptyItem, emptyItem, emptyItem])
             model.appendRow([parentItem, emptyItem, emptyItem])
         else:
-            if type(parent) == QModelIndex:
+            if isinstance(parent, QModelIndex):
                 # print(u'é QModelIndex', child)
                 parentItem = model.itemFromIndex(parent)
                 childItem = QStandardItem(child[0])
@@ -752,7 +752,7 @@ class IbgeDataDownloader:
         self.dlgBar.show()
         self.msgBar.pushMessage(
             self.tr("Processing"),
-            self.tr('Searching products with "{}" word.\nThis may take several minutes...').format(text),
+            self.tr(f"Searching products with '{text}' word.\nThis may take several minutes..."),
             Qgis.Info,
             duration=0,
         )
