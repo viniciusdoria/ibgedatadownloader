@@ -38,14 +38,6 @@ jobs:
           python -m pip install qgis-plugin-ci
           if [ -f requirements/packaging.txt ]; then pip install -r requirements/packaging.txt; fi
 
-      - name: Create GitHub Release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "Criando release vazia para tag ${GITHUB_REF/refs\/tags\//}..."
-          # Tenta criar a release. Se já existir (rerun), não falha (|| true)
-          gh release create ${GITHUB_REF/refs\/tags\//} --title "Release ${GITHUB_REF/refs\/tags\//}" --notes "Gerado automaticamente pelo CI" || true
-
       - name: Deploy plugin (Release & Repo)
         run: >-
           qgis-plugin-ci
