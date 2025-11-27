@@ -9,7 +9,7 @@ env:
   PYTHON_VERSION: 3.12
 
 permissions:
-  contents: write  # Permite criar releases e tags
+  contents: write
 
 jobs:
   release:
@@ -38,11 +38,27 @@ jobs:
           python -m pip install qgis-plugin-ci
           if [ -f requirements/packaging.txt ]; then pip install -r requirements/packaging.txt; fi
 
+      # DEBUG: Confirma o conteúdo do pyproject.toml para garantir que o slug está lá
+      - name: Debug - Verificar Configuração
+        run: |
+          echo "Conteúdo do pyproject.toml:"
+          cat pyproject.toml
+
+      # Cria a release vazia usando o token novo para garantir que ela existe
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          echo "Criando release para tag ${GITHUB_REF/refs\/tags\//}..."
+          gh release create ${GITHUB_REF/refs\/tags\//} --title "Release ${GITHUB_REF/refs\/tags\//}" --notes "Gerado automaticamente pelo CI" || true
+
+      # Faz o deploy usando o token novo
       - name: Deploy plugin (Release & Repo)
         run: >-
           qgis-plugin-ci
           release ${GITHUB_REF/refs\/tags\//}
-          --github-token ${{ secrets.GITHUB_TOKEN }}
+          --github-token ${{ secrets.RELEASE_TOKEN }}
           --create-plugin-repo
-          --osgeo-username ${{ secrets.OSGEO_USERNAME }}
-          --osgeo-password ${{ secrets.OSGEO_PASSWORD }}
+          # Mantenha comentado OSGEO até o GitHub funcionar 100%
+          # --osgeo-username ${{ secrets.OSGEO_USERNAME }}
+          # --osgeo-password ${{ secrets.OSGEO_PASSWORD }}
