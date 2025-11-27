@@ -44,6 +44,8 @@ jobs:
         run: |
           # Gera o changelog da versão atual e salva no arquivo release.md
           qgis-plugin-ci changelog ${GITHUB_REF/refs\/tags\//} > release.md
+          # Adiciona uma quebra de linha visual antes da lista automática
+          echo -e "\n" >> release.md
 
           # (Opcional) Mostra o conteúdo no log para debug
           cat release.md
@@ -54,7 +56,11 @@ jobs:
         run: |
           echo "Criando release para tag ${GITHUB_REF/refs\/tags\//}..."
           # Usa --notes-file para pegar o texto gerado acima
-          gh release create ${GITHUB_REF/refs\/tags\//} --title "Release ${GITHUB_REF/refs\/tags\//}" --notes-file release.md || true
+          gh release create ${GITHUB_REF/refs\/tags\//} \
+            --title "Release ${GITHUB_REF/refs\/tags\//}" \
+            --notes-file release.md \
+            --generate-notes
+            || true
 
       - name: Deploy plugin (Release & Repo)
         run: >-
