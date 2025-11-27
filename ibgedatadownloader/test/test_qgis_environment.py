@@ -1,6 +1,5 @@
 """Tests for QGIS functionality.
 
-
 .. note:: This program is free software; you can redistribute it and/or modify
      it under the terms of the GNU General Public License as published by
      the Free Software Foundation; either version 2 of the License, or
@@ -27,7 +26,6 @@ class QGISTest(unittest.TestCase):
 
     def test_qgis_environment(self):
         """QGIS environment has the expected providers"""
-
         r = QgsProviderRegistry.instance()
         self.assertIn("gdal", r.providerList())
         self.assertIn("ogr", r.providerList())

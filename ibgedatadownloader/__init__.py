@@ -1,5 +1,4 @@
-"""
-/***************************************************************************
+"""/***************************************************************************
  IbgeDataDownloader
                                  A QGIS plugin
  This plugin downloads data from IBGE
@@ -30,7 +29,6 @@ def classFactory(iface):  # pylint: disable=invalid-name
     :param iface: A QGIS interface instance.
     :type iface: QgsInterface
     """
-    #
     from .ibgeDataDownloader import IbgeDataDownloader
 
     return IbgeDataDownloader(iface)

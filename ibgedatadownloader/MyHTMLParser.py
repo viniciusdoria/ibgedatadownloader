@@ -1,5 +1,4 @@
-"""
-/***************************************************************************
+"""/***************************************************************************
         begin                : 2021-11-17
         git sha              : $Format:%H$
         copyright            : (C) 2021 by Vinicius Etchebeur Medeiros Dória
@@ -29,7 +28,6 @@ class MyHTMLParser(HTMLParser):
         Sets up attributes to track parent/child relationships in HTML structure,
         specifically for parsing FTP directory listings.
         """
-
         # Mother class constructor HTMLParser (subclass)
         super().__init__()
 
@@ -50,7 +48,6 @@ class MyHTMLParser(HTMLParser):
         :param tag: The name of the tag being processed
         :param attrs: List of (name, value) pairs containing the tag's attributes
         """
-
         if tag == "tr":
             self.trElement = True
             # print(tag, self.trElement)
@@ -74,7 +71,6 @@ class MyHTMLParser(HTMLParser):
 
         :param tag: The name of the tag being closed
         """
-
         if tag == "tr":
             self.trElement = False
             # If child is valid, append to children
@@ -91,7 +87,6 @@ class MyHTMLParser(HTMLParser):
 
         :param data: The text content to process
         """
-
         # Remove white spaces at start / end of the string
         data = data.lstrip().rstrip()
         # Set child last modified date
@@ -132,7 +127,6 @@ class MyHTMLParser(HTMLParser):
 
         :return: List of child entries, or None if no children were found
         """
-
         return self.children if self.children else None
 
     def getParent(self):
@@ -140,7 +134,6 @@ class MyHTMLParser(HTMLParser):
 
         :return: The parent URL string, or None if not set
         """
-
         return self.parent
 
     def resetChild(self):
@@ -148,7 +141,6 @@ class MyHTMLParser(HTMLParser):
 
         Called after a child entry is complete and added to children list.
         """
-
         self.child = []
 
     def resetChildren(self):
@@ -156,7 +148,6 @@ class MyHTMLParser(HTMLParser):
 
         Clears all previously parsed child entries.
         """
-
         self.children = []
 
     def resetParent(self):
@@ -164,5 +155,4 @@ class MyHTMLParser(HTMLParser):
 
         Clears the current parent URL.
         """
-
         self.parent = None

@@ -1,5 +1,4 @@
-"""
-/***************************************************************************
+"""/***************************************************************************
         begin                : 2021-11-17
         git sha              : $Format:%H$
         copyright            : (C) 2021 by Vinicius Etchebeur Medeiros Dória
@@ -24,7 +23,6 @@ class MyProgressDialog(QProgressDialog):
 
     def __init__(self):
         """Constructor."""
-
         # Mother class constructor QProgressDialog (subclass)
         super().__init__()
 
@@ -33,12 +31,10 @@ class MyProgressDialog(QProgressDialog):
 
     def setClose(self, var):
         """Defines if the dialog can be closed"""
-
         self.__close__ = var
 
     def closeEvent(self, event):
         """Overrides closeEvent (closing dialog)"""
-
         if self.__close__:
             super().closeEvent(event)
         else:

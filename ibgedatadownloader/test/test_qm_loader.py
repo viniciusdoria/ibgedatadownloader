@@ -1,7 +1,5 @@
 #!/usr/bin/env python
-"""
-Script para testar se o arquivo .qm é válido e pode ser carregado pelo QGIS.
-"""
+"""Script para testar se o arquivo .qm é válido e pode ser carregado pelo QGIS."""
 
 from pathlib import Path
 
@@ -10,7 +8,6 @@ from qgis.PyQt.QtCore import QSettings, QTranslator
 
 def test_qm_file():
     """Testa carregamento do arquivo .qm português"""
-
     plugin_dir = Path(__file__).parent.parent
     qm_file = plugin_dir / "i18n" / "ibgeDataDownloader_pt.qm"
 
@@ -41,16 +38,15 @@ def test_qm_file():
         print()
         print("Alguns testes de tradução:")
         print(
-            f"  'Download data from IBGE' -> '{translator.translate('IbgeDataDownloader', 'Download data from IBGE')}'"
+            f"  'Download data from IBGE' -> '{translator.translate('IbgeDataDownloader', 'Download data from IBGE')}'",
         )
         print(f"  'Output directory' -> '{translator.translate('IbgeDataDownloader', 'Output directory')}'")
         return True
-    else:
-        print("Possíveis motivos:")
-        print("  - Arquivo .qm corrompido")
-        print("  - Formato .qm inválido")
-        print("  - Problemas de codificação")
-        return False
+    print("Possíveis motivos:")
+    print("  - Arquivo .qm corrompido")
+    print("  - Formato .qm inválido")
+    print("  - Problemas de codificação")
+    return False
 
 
 if __name__ == "__main__":

@@ -33,7 +33,6 @@ class IbgeDataDownloaderDialogTest(unittest.TestCase):
 
     def test_dialog_ok(self):
         """Test we can click OK."""
-
         button = self.dialog.button_box.button(QDialogButtonBox.Ok)
         button.click()
         result = self.dialog.result()

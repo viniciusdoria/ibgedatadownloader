@@ -1,5 +1,4 @@
-"""
-/***************************************************************************
+"""/***************************************************************************
         begin                : 2021-11-17
         git sha              : $Format:%H$
         copyright            : (C) 2021 by Vinicius Etchebeur Medeiros Dória
@@ -43,7 +42,6 @@ class WorkerSearchManager(QgsTask):
 
     def __init__(self, iface, desc, rootFtp, txtSearch, matchContains, matchScore):
         """Constructor."""
-
         # Mother class constructor QgsTask (subclass)
         super().__init__(desc, flags=QgsTask.CanCancel)
 
@@ -65,21 +63,16 @@ class WorkerSearchManager(QgsTask):
 
     def standardizeText(self, text):
         """Standardizes texts to check equality."""
-
-        try:
-            text = unicode(text, "utf-8")
-        except (TypeError, NameError):
-            pass
         text = unicodedata.normalize("NFD", text)
         text = text.encode("ascii", "ignore")
         text = text.decode("utf-8")
         text = text.replace(" ", "_")
-        return str(text.lower())
+        return text.lower()
 
     def finished(self, result):
         """This function is called automatically when the task is completed and is
-        called from the main thread so it is safe to interact with the GUI etc here"""
-
+        called from the main thread so it is safe to interact with the GUI etc here
+        """
         if result is False:
             self.msgBar.pushMessage(
                 self.tr("Error"),
@@ -104,7 +97,6 @@ class WorkerSearchManager(QgsTask):
 
     def run(self):
         """Principal method that is automatically called when the task runs."""
-
         self.barMax.emit(0)
 
         matchUrl = []
@@ -117,7 +109,7 @@ class WorkerSearchManager(QgsTask):
         try:
             response = urllib.request.urlopen(self.rootFtp)
             self.htmlParser.feed(response.read().decode("utf-8", errors="ignore"))
-        except socket.timeout as e:
+        except TimeoutError as e:
             self.exception.append(e)
             self.processResult.emit(
                 [
@@ -126,7 +118,7 @@ class WorkerSearchManager(QgsTask):
                     self.exception,
                     matchUrl,
                     "search",
-                ]
+                ],
             )
             return True
         # Set timeout for requests to default
@@ -145,7 +137,7 @@ class WorkerSearchManager(QgsTask):
                     if self.txtSearch.lower() in child[0].lower():
                         matchUrl.append([self.rootFtp + child[0], child[1]])
                         self.textProgress.emit(
-                            self.tr(f"{len(matchUrl)} Product(s) found.\nThe search may take several minutes...")
+                            self.tr(f"{len(matchUrl)} Product(s) found.\nThe search may take several minutes..."),
                         )
                 elif (
                     SequenceMatcher(
@@ -158,7 +150,7 @@ class WorkerSearchManager(QgsTask):
                 ):
                     matchUrl.append([self.rootFtp + child[0], child[1]])
                     self.textProgress.emit(
-                        self.tr(f"{len(matchUrl)} Product(s) found.\nThe search may take several minutes...")
+                        self.tr(f"{len(matchUrl)} Product(s) found.\nThe search may take several minutes..."),
                     )
             loop = 0
             while True:
@@ -173,7 +165,7 @@ class WorkerSearchManager(QgsTask):
                                 self.exception,
                                 matchUrl,
                                 "search",
-                            ]
+                            ],
                         )
                         return False
                     loop += 1
@@ -192,11 +184,7 @@ class WorkerSearchManager(QgsTask):
                         self.htmlParser.feed(response.read().decode("utf-8", errors="ignore"))
                         # Set timeout for requests to default
                         socket.setdefaulttimeout(None)
-                    except (
-                        urllib.error.HTTPError,
-                        socket.timeout,
-                        NotImplementedError,
-                    ):
+                    except (TimeoutError, urllib.error.HTTPError, NotImplementedError):
                         # print(e.code, e.reason, e.headers)
                         # print('tentando novamente em 5 segundos...')
                         # Set timeout for requests to default
@@ -211,11 +199,7 @@ class WorkerSearchManager(QgsTask):
                             # Set timeout for requests to default
                             socket.setdefaulttimeout(None)
                             # print('feed2 ok', sUrl[0])
-                        except (
-                            urllib.error.HTTPError,
-                            socket.timeout,
-                            NotImplementedError,
-                        ) as e:
+                        except (TimeoutError, urllib.error.HTTPError, NotImplementedError) as e:
                             # Set timeout for requests to default
                             socket.setdefaulttimeout(None)
                             # print(e.code, e.reason, e.headers)
@@ -239,8 +223,8 @@ class WorkerSearchManager(QgsTask):
                                     matchUrl.append([sUrl[0] + child[0], child[1]])
                                     self.textProgress.emit(
                                         self.tr("{} Product(s) found.\nThe search may take several minutes...").format(
-                                            len(matchUrl)
-                                        )
+                                            len(matchUrl),
+                                        ),
                                     )
                             elif (
                                 SequenceMatcher(
@@ -254,8 +238,8 @@ class WorkerSearchManager(QgsTask):
                                 matchUrl.append([sUrl[0] + child[0], child[1]])
                                 self.textProgress.emit(
                                     self.tr("{} Product(s) found.\nThe search may take several minutes...").format(
-                                        len(matchUrl)
-                                    )
+                                        len(matchUrl),
+                                    ),
                                 )
                     try:
                         searchUrls.remove(sUrl)
@@ -272,6 +256,6 @@ class WorkerSearchManager(QgsTask):
                 self.exception,
                 matchUrl,
                 "search",
-            ]
+            ],
         )
         return True

@@ -2,8 +2,7 @@ import os
 
 
 def check_path(path_to_check: str, is_file: bool = False):
-    """
-    Verifica se um caminho (diretório ou arquivo) existe e imprime o status.
+    """Verifica se um caminho (diretório ou arquivo) existe e imprime o status.
 
     :param path_to_check: O caminho a ser verificado.
     :param is_file: Define se o caminho é um arquivo (True) ou diretório (False).
@@ -20,9 +19,7 @@ def check_path(path_to_check: str, is_file: bool = False):
 
 
 def main():
-    """
-    Constrói e verifica todos os caminhos definidos no arquivo qgis.pth.
-    """
+    """Constrói e verifica todos os caminhos definidos no arquivo qgis.pth."""
     print("-" * 80)
     print("Verificando a existência dos caminhos definidos em qgis.pth...")
     print("-" * 80)
@@ -35,7 +32,7 @@ def main():
     except KeyError:
         print(
             "ERRO: A variável de ambiente 'ProgramFiles' não foi encontrada. "
-            "Este script precisa ser executado em um ambiente Windows."
+            "Este script precisa ser executado em um ambiente Windows.",
         )
         return
 

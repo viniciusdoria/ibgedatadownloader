@@ -1,5 +1,4 @@
-"""
-Concentra os metadados sobre o plugin para fácil acesso.
+"""Concentra os metadados sobre o plugin para fácil acesso.
 
 `Saiba mais. <https://packaging.python.org/pt-br/latest/guides/single-sourcing-package-version/>`_
 """
@@ -29,8 +28,7 @@ PLG_METADATA_FILE: Final[Path] = DIR_PLUGIN_ROOT.resolve() / "metadata.txt"
 
 
 def plugin_metadata_as_dict() -> dict[str, dict[str, str]]:
-    """
-    Reads metadata.txt and returns it as a dictionary of dictionaries.
+    """Reads metadata.txt and returns it as a dictionary of dictionaries.
 
     :raises FileNotFoundError: if metadata.txt not found
     :raises Exception: if metadata.txt does not contain a [general] section or some required field

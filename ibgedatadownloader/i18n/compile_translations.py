@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-"""
-Compilador de Traduções Qt (.ts -> .qm)
+"""Compilador de Traduções Qt (.ts -> .qm)
 
 Este projeto inclui a ferramenta Qt Linguist (lrelease.exe) em:
     tools/lrelease.exe

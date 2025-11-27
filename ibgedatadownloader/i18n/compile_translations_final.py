@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-"""
-Solução de fallback para traduções sem lrelease.
+"""Solução de fallback para traduções sem lrelease.
 
 Como não conseguimos compilar um arquivo .qm válido sem a ferramenta oficial do Qt,
 esta solução oferece duas alternativas:
@@ -61,7 +60,11 @@ def compile_with_lrelease(lrelease_path):
 
         try:
             result = subprocess.run(
-                [str(lrelease_path), str(ts_file), "-qm", str(qm_file)], capture_output=True, text=True, timeout=10
+                [str(lrelease_path), str(ts_file), "-qm", str(qm_file)],
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=10,
             )
 
             if result.returncode == 0:

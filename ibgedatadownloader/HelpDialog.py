@@ -1,5 +1,4 @@
-"""
-/***************************************************************************
+"""/***************************************************************************
         begin                : 2021-11-17
         git sha              : $Format:%H$
         copyright            : (C) 2021 by Vinicius Etchebeur Medeiros Dória
@@ -27,7 +26,6 @@ class HelpDialog(QDialog):
 
     def __init__(self, parent):
         """Constructor."""
-
         # Mother class constructor QgsTask (subclass)
         super().__init__(parent)
 
@@ -61,7 +59,6 @@ class HelpDialog(QDialog):
 
     def helpBrowserAnchorClicked(self, link):
         """Change page of help dialog when an anchor is clicked"""
-
         htmlPage = open(os.path.join(self.fileDir, "pluginHelp", self.locale, link.toString()))
         self.helpBrowser.setHtml(htmlPage.read())
         htmlPage.close()

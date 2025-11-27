@@ -21,11 +21,9 @@ class IbgeDataDownloaderDialogTest(unittest.TestCase):
 
     def setUp(self):
         """Runs before each test."""
-        pass
 
     def tearDown(self):
         """Runs after each test."""
-        pass
 
     def test_icon_png(self):
         """Test we can click OK."""

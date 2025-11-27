@@ -1,5 +1,4 @@
-"""
-/***************************************************************************
+"""/***************************************************************************
  IbgeDataDownloader
                                  A QGIS plugin
  This plugin downloads data from IBGE
@@ -28,10 +27,12 @@ import socket
 import tarfile
 import urllib
 import zipfile
+from collections.abc import Callable
 from pathlib import Path
 
 from qgis.core import Qgis, QgsApplication, QgsProject, QgsVectorLayer
-from qgis.PyQt.QtCore import QCoreApplication, QModelIndex, QSettings, Qt, QTranslator
+from qgis.gui import QgsInterface
+from qgis.PyQt.QtCore import QCoreApplication, QItemSelection, QModelIndex, QSettings, Qt, QTranslator
 from qgis.PyQt.QtGui import QBrush, QColor, QIcon, QStandardItem, QStandardItemModel
 from qgis.PyQt.QtWidgets import (
     QAbstractItemView,
@@ -42,6 +43,7 @@ from qgis.PyQt.QtWidgets import (
     QProgressBar,
     QPushButton,
     QToolButton,
+    QWidget,
 )
 
 from ibgedatadownloader.__about__ import DIR_PLUGIN_ROOT
@@ -54,9 +56,14 @@ from ibgedatadownloader.WorkerSearchManager import WorkerSearchManager
 
 
 class IbgeDataDownloader:
-    """QGIS Plugin Implementation."""
+    """Manages the main functionality of the IBGE Data Downloader plugin.
 
-    def __init__(self, iface):
+    This class handles the plugin's lifecycle, including initialization of the GUI,
+    user interactions, and communication with background worker tasks for searching
+    and downloading data from IBGE's FTP servers.
+    """
+
+    def __init__(self, iface: QgsInterface) -> None:
         """Constructor.
 
         :param iface: An interface instance that will be passed to this class
@@ -114,7 +121,7 @@ class IbgeDataDownloader:
         self.itemsHighlighted = []
 
     # noinspection PyMethodMayBeStatic
-    def tr(self, message):
+    def tr(self, message: str) -> str:
         """Get the translation for a string using Qt translation API.
 
         We implement this ourselves since we do not inherit QObject.
@@ -130,15 +137,15 @@ class IbgeDataDownloader:
 
     def add_action(
         self,
-        icon_path,
-        text,
-        callback,
-        enabled_flag=True,
-        add_to_menu=True,
-        add_to_toolbar=True,
-        status_tip=None,
-        whats_this=None,
-        parent=None,
+        icon_path: str,
+        text: str,
+        callback: Callable,
+        enabled_flag: bool = True,
+        add_to_menu: bool = True,
+        add_to_toolbar: bool = True,
+        status_tip: str | None = None,
+        whats_this: str | None = None,
+        parent: QWidget | None = None,
     ):
         """Add a toolbar icon to the toolbar.
 
@@ -178,7 +185,6 @@ class IbgeDataDownloader:
             added to self.actions list.
         :rtype: QAction
         """
-
         icon = QIcon(icon_path)
         action = QAction(icon, text, parent)
         action.triggered.connect(callback)
@@ -201,9 +207,8 @@ class IbgeDataDownloader:
 
         return action
 
-    def initGui(self):
+    def initGui(self) -> None:
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
-
         icon_path = str(DIR_PLUGIN_ROOT / "icon.png")
         self.add_action(
             icon_path,
@@ -215,16 +220,24 @@ class IbgeDataDownloader:
         # will be set False in run()
         self.firstStart = True
 
-    def unload(self):
+    def unload(self) -> None:
         """Remove the plugin menu item and icon from QGIS GUI."""
-
         for action in self.actions:
             self.iface.removePluginMenu(self.tr("&Download data from IBGE"), action)
             self.iface.removeToolBarIcon(action)
 
-    def progressDialog(self, value, text):
-        """Creates and returns the progress dialog and bar"""
+    def progressDialog(self, value: int, text: str) -> tuple[MyProgressDialog, QProgressBar]:
+        """Create and configure a custom progress dialog.
 
+        :param value: The initial value for the progress bar.
+        :type value: int
+
+        :param text: The label text to display in the dialog.
+        :type text: str
+
+        :returns: A tuple containing the configured progress dialog and progress bar.
+        :rtype: tuple(MyProgressDialog, QProgressBar)
+        """
         dialog = MyProgressDialog()
         dialog.setWindowTitle(self.tr("Processing. Please, wait..."))
         dialog.setLabelText(text)
@@ -245,41 +258,54 @@ class IbgeDataDownloader:
                 break
         return dialog, progressBar
 
-    def setMaximumProgressBar(self, maxN):
-        """Sets maximum of the progress bar"""
+    def setMaximumProgressBar(self, maxN: float) -> None:
+        """Set the maximum value for the progress bar.
 
+        :param maxN: The maximum value.
+        :type maxN: float
+        """
         # self.progressBar.reset()
         self.progressValue = 0
         self.progressBar.setRange(self.progressValue, int(maxN))
         self.progressBar.setValue(self.progressValue)
         # print(int(maxN))
 
-    def canceledProgressDialog(self):
-        """Cancels the task."""
-
+    def canceledProgressDialog(self) -> None:
+        """Handle the cancellation of the progress dialog."""
         self.dlgBarCancelButton.setEnabled(False)
-        self.dlgBar.setLabelText(self.tr("{}\nCanceling...").format(self.dlgBar.labelText().split("\n")[0]))
-        self.dlgBar.show()
+        self.dlg_bar.setLabelText(self.tr("{}\nCanceling...").format(self.dlg_bar.labelText().split("\n")[0]))
+        self.dlg_bar.show()
         if not self.threadTask.isCanceled():
             self.threadTask.cancel()
 
-    def setProgressValue(self, val):
-        """Defines value of progress bar."""
+    def setProgressValue(self, val: int) -> None:
+        """Set the current value of the progress bar.
 
+        :param val: The progress value.
+        :type val: int
+        """
         self.progressValue = int(val)
         self.progressBar.setValue(self.progressValue)
 
-    def setProgressText(self, txt):
-        """Defines the label of the progress dialog."""
+    def setProgressText(self, txt: str) -> None:
+        """Set the label text of the progress dialog.
 
-        self.dlgBar.setLabelText(txt)
+        If the text indicates file extraction, the progress bar is set to indeterminate.
+
+        :param txt: The text to display.
+        :type txt: str
+        """
+        self.dlg_bar.setLabelText(txt)
         if self.tr("Extracting files") in txt:
             self.progressBar.setRange(0, 0)
             self.progressBar.setValue(0)
 
-    def dlgDirOutput(self, checked):
-        """Opens dialog to indicate the output directory."""
+    def dlgDirOutput(self, checked: bool) -> None:
+        """Open a dialog to select the output directory.
 
+        :param checked: The state of the button that triggered the slot.
+        :type checked: bool
+        """
         self.dirOutput = QFileDialog.getExistingDirectory(QFileDialog(), self.tr("Output directory"), "")
         self.dlg.lineEdit_Saida.setText(self.dirOutput)
 
@@ -288,18 +314,24 @@ class IbgeDataDownloader:
         else:
             self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
 
-    def threadResult(self, result):
-        """Keeps reference of the worker result"""
+    def thread_result(self, result: list) -> None:
+        """Store the result from a background worker thread.
 
+        :param result: The result list emitted by the worker task.
+        :type result: list
+        """
         self.pluginResult = result
         # self.endingProcess()
 
-    def endingProcess(self):
-        """Closes progress dialog and finishes the job"""
+    def end_process(self) -> None:
+        """Finalize the process after a background task completes.
 
+        This method closes the progress dialog, displays messages to the user,
+        and handles post-processing tasks like adding layers or highlighting search results.
+        """
         # Close progress dialog
-        self.dlgBar.setClose(True)
-        self.dlgBar.close()
+        self.dlg_bar.setClose(True)
+        self.dlg_bar.close()
 
         # Define message title and deal with remaining data, if necessary
         if self.pluginResult[4] == "download":
@@ -350,12 +382,12 @@ class IbgeDataDownloader:
                 msgType = self.tr("Success")
 
             if len(self.pluginResult[3]) > 0:
-                self.dlgBar, self.progressBar = self.progressDialog(
+                self.dlg_bar, self.progressBar = self.progressDialog(
                     0,
                     self.tr("Adding products to Products Tree. This may take several minutes..."),
                 )
                 self.progressBar.setRange(0, 0)
-                self.dlgBar.show()
+                self.dlg_bar.show()
                 for i in self.pluginResult[3]:
                     dirs = i[0].split("/")[2:]
                     # print(i, dirs)
@@ -391,8 +423,8 @@ class IbgeDataDownloader:
                                                 QAbstractItemView.PositionAtTop,
                                             )
 
-                self.dlgBar.setClose(True)
-                self.dlgBar.close()
+                self.dlg_bar.setClose(True)
+                self.dlg_bar.close()
 
         self.msgBar.clearWidgets()
         if self.pluginResult[2] != []:
@@ -406,9 +438,19 @@ class IbgeDataDownloader:
         else:
             self.msgBar.pushMessage(msgType, self.pluginResult[0], self.pluginResult[1], duration=20)
 
-    def populateComboListBox(self, objeto, lista, coluna="", inicial=""):
-        """Populates a list or combo object."""
+    def populateComboListBox(self, objeto, lista: list, coluna: str = "", inicial: str = "") -> None:
+        """Populate a QComboBox or QListWidget with items from a list.
 
+        :param objeto: The widget to populate (QComboBox or QListWidget).
+        :type objeto: QtWidgets.QComboBox or QtWidgets.QListWidget
+
+        :param lista: The list of items to add.
+        :type lista: list
+
+        :param coluna: The key to access a specific column in a list of dicts/tuples.
+
+        :param inicial: An optional initial item to add.
+        """
         objeto.clear()
         if inicial != "":
             objeto.addItem(inicial)
@@ -417,15 +459,19 @@ class IbgeDataDownloader:
                 e = elemento
             else:
                 e = elemento[0] + " - " + elemento[coluna]
-            try:
-                item = unicode(e)
-            except TypeError:
-                item = str(e)
+            item = str(e)
             objeto.addItem(item)
 
-    def getCurrentObjects(self, clear=False):
-        """Returns reference objects and clears selection, if needed"""
+    def getCurrentObjects(self, clear: bool = False) -> tuple[str, QAbstractItemView, QItemSelectionModel]:
+        """Get the relevant objects based on the currently active tab.
 
+        :param clear: If True, clears the selection model of the inactive tab.
+        :type clear: bool
+
+        :returns: A tuple containing the base URL, the active QTreeView,
+            and its selection model.
+        :rtype: tuple(str, QtWidgets.QTreeView, QtCore.QItemSelectionModel)
+        """
         if self.dlg.tabWidget.currentIndex() == 0:
             if clear:
                 self.statSelectionModel.clear()
@@ -441,9 +487,15 @@ class IbgeDataDownloader:
 
         return baseUrl, treeView, selectionModel
 
-    def getItemUrl(self, modelIndex):
-        """Returns the url of the given item (modelIndex)"""
+    def getItemUrl(self, modelIndex: QModelIndex) -> str:
+        """Construct the full URL for a given item in the tree view.
 
+        :param modelIndex: The QModelIndex of the item.
+        :type modelIndex: QtCore.QModelIndex
+
+        :returns: The constructed URL for the item.
+        :rtype: str
+        """
         baseUrl, _, _ = self.getCurrentObjects()
 
         if modelIndex.column() == 0:
@@ -469,26 +521,36 @@ class IbgeDataDownloader:
 
         return productUrl
 
-    def clearItemsHighlighted(self):
-        """Clears highlighted items"""
-
+    def clearItemsHighlighted(self) -> None:
+        """Remove the background highlight from all previously highlighted items."""
         while self.itemsHighlighted:
             for i in self.itemsHighlighted:
                 i.setBackground(QBrush())
                 self.itemsHighlighted.remove(i)
 
-    def treeViewPressed(self, modelIndex):
-        """Keeps reference of the check state of the item about to be clicked"""
+    def treeViewPressed(self, modelIndex: QModelIndex) -> None:
+        """Store the check state of an item before it is clicked.
 
+        This is used to detect changes in the check state in the `treeViewClicked` slot.
+
+        :param modelIndex: The QModelIndex of the pressed item.
+        :type modelIndex: QtCore.QModelIndex
+        """
         item = modelIndex.model().itemFromIndex(modelIndex)
         self.itemLastCheckState = item.checkState() if item.isCheckable() else None
 
         # Set background of highlighted items to default
         self.clearItemsHighlighted()
 
-    def treeViewClicked(self, modelIndex):
-        """Slot of clicked signal that constructs the items URL and enables the OK button"""
+    def treeViewClicked(self, modelIndex: QModelIndex) -> None:
+        """Handle a click event on an item in the tree view.
 
+        Manages the list of selected products, updates UI elements accordingly,
+        and checks if the download (OK) button should be enabled.
+
+        :param modelIndex: The QModelIndex of the clicked item.
+        :type modelIndex: QtCore.QModelIndex
+        """
         _, treeView, selectionModel = self.getCurrentObjects()
 
         # Set background of highlighted items to default
@@ -522,8 +584,7 @@ class IbgeDataDownloader:
                     if any(p[1].endswith(ext) for ext in (".zip", ".tar")):
                         self.dlg.checkBox_Unzip.setEnabled(True)
                         break
-                    else:
-                        self.dlg.checkBox_Unzip.setEnabled(False)
+                    self.dlg.checkBox_Unzip.setEnabled(False)
             else:
                 self.dlg.checkBox_Unzip.setEnabled(False)
                 self.dlg.checkBox_AddLayer.setEnabled(False)
@@ -531,9 +592,15 @@ class IbgeDataDownloader:
             # Check if OK button can be enabled
             self.checkOkButton()
 
-    def treeViewExpanded(self, modelIndex):
-        """Slot of expanded signal that adds item's children to the tree"""
+    def treeViewExpanded(self, modelIndex: QModelIndex) -> None:
+        """Handle the expansion of an item in the tree view.
 
+        Fetches the directory listing for the expanded item from the IBGE FTP server
+        and populates the tree with its children (subdirectories and files).
+
+        :param modelIndex: The QModelIndex of the expanded item.
+        :type modelIndex: QtCore.QModelIndex
+        """
         _, treeView, _ = self.getCurrentObjects()
 
         if modelIndex not in self.itemsExpanded:
@@ -558,7 +625,7 @@ class IbgeDataDownloader:
                 self.html_parser.feed(response.read().decode("utf-8", errors="ignore"))
                 # Set timeout for requests to default
                 socket.setdefaulttimeout(None)
-            except socket.timeout as e:
+            except TimeoutError as e:
                 self.msgBar.pushMessage(
                     self.tr("Warning"),
                     self.tr("The expand operation of an item fails due to a server timeout."),
@@ -582,9 +649,12 @@ class IbgeDataDownloader:
             # Add the item to expanded list
             self.itemsExpanded.append(modelIndex)
 
-    def searchExactStateChanged(self, state):
-        """Enables or disables match score options depending on Exact match checkbox state"""
+    def searchExactStateChanged(self, state: Qt.CheckState) -> None:
+        """Enable or disable the match score spinbox based on the 'Contains' checkbox state.
 
+        :param state: The new state of the checkbox.
+        :type state: QtCore.Qt.CheckState
+        """
         if state == Qt.Checked:
             self.dlg.label_Match.setEnabled(False)
             self.dlg.doubleSpinBox_MatchValue.setEnabled(False)
@@ -592,9 +662,16 @@ class IbgeDataDownloader:
             self.dlg.label_Match.setEnabled(True)
             self.dlg.doubleSpinBox_MatchValue.setEnabled(True)
 
-    def addTreeViewParentChildItem(self, treeView, parent, child=None):
-        """Adds parent or children items to the QTreeView"""
+    def addTreeViewParentChildItem(self, treeView: QAbstractItemView, parent, child: list | None = None) -> None:
+        """Add a parent or child item to the QTreeView.
 
+        :param treeView: The QTreeView to which the item will be added.
+        :type treeView: QtWidgets.QTreeView
+
+        :param parent: The parent item or its text.
+
+        :param child: A list containing the child item's data.
+        """
         model = treeView.model()
         if not model:
             model = QStandardItemModel(0, 3)
@@ -603,7 +680,7 @@ class IbgeDataDownloader:
                     self.tr("Products Tree"),
                     self.tr("File size"),
                     self.tr("Last modified"),
-                ]
+                ],
             )
             treeView.setModel(model)
 
@@ -638,9 +715,11 @@ class IbgeDataDownloader:
             # print(childItemSize.text(), childItemSize.row(), childItemSize.column())
             # print(childItemDate.text(), childItemDate.row(), childItemDate.column())
 
-    def uncheckAll(self):
-        """Slot of uncheck all button clicked signal that unchecks all products and options"""
+    def uncheckAll(self) -> None:
+        """Uncheck all selected products and reset related UI options.
 
+        This is the slot for the 'Uncheck All' button.
+        """
         # Iterate trough products list
         for p in self.selectedProductsUrl:
             model = p[2].model()
@@ -666,9 +745,14 @@ class IbgeDataDownloader:
         # Disable OK button
         self.checkOkButton()
 
-    def searchWordTextChanged(self, text):
-        """Standardizes text and enables or disables search button if text respects standard features"""
+    def searchWordTextChanged(self, text: str) -> None:
+        """Handle text changes in the search input field.
 
+        Standardizes the input text (replaces spaces with underscores) and enables
+        the search button only if the text is valid.
+
+        :param text: The current text in the search field.
+        """
         # Starndardize text
         text = text.replace(" ", "_")
         self.dlg.lineEdit_SearchWord.setText(text)
@@ -697,9 +781,16 @@ class IbgeDataDownloader:
         else:
             self.dlg.pushButton_Search.setEnabled(False)
 
-    def treeViewSelectionChanged(self, selected, deselected):
-        """Permits the selection only if column == 0, feed selectedSearch attribute"""
+    def treeViewSelectionChanged(self, selected: QItemSelection, deselected: QItemSelection) -> None:
+        """Handle changes in the tree view's selection.
 
+        Updates the `selectedSearch` attribute with the URL of the selected directory,
+        which can be used to limit the scope of a search.
+
+        :param selected: The newly selected items.
+        :type selected: QtCore.QItemSelection
+        :param deselected: The previously selected items.
+        """
         _, treeView, selectionModel = self.getCurrentObjects(True)
 
         if selected.indexes():
@@ -714,26 +805,31 @@ class IbgeDataDownloader:
             # Enable or disable selected item search option
             self.radioButtonSearchGeoToggled(self.dlg.radioButton_SearchGeo.isChecked())
 
-    def radioButtonSearchGeoToggled(self, checked):
-        """Enables or disables search in selected only depending on the selectem item and FTP selected"""
+    def radioButtonSearchGeoToggled(self, checked: bool) -> None:
+        """Enable or disable the 'Search in selected only' checkbox.
 
+        The checkbox is enabled only if a directory is selected in the tree view
+        that corresponds to the currently selected FTP server (Geo or Stat).
+        :param checked: True if the 'Geo' radio button is checked, False otherwise.
+        """
         if self.selectedSearch != "":
             if checked:
                 if self.selectedSearch.startswith("https://geo"):
                     self.dlg.checkBox_SearchSelectedOnly.setEnabled(True)
                 else:
                     self.dlg.checkBox_SearchSelectedOnly.setEnabled(False)
+            elif self.selectedSearch.startswith("https://ftp"):
+                self.dlg.checkBox_SearchSelectedOnly.setEnabled(True)
             else:
-                if self.selectedSearch.startswith("https://ftp"):
-                    self.dlg.checkBox_SearchSelectedOnly.setEnabled(True)
-                else:
-                    self.dlg.checkBox_SearchSelectedOnly.setEnabled(False)
+                self.dlg.checkBox_SearchSelectedOnly.setEnabled(False)
         else:
             self.dlg.checkBox_SearchSelectedOnly.setEnabled(False)
 
-    def searchClicked(self):
-        """Searches for products with typed word"""
+    def searchClicked(self) -> None:
+        """Initiate a background search for products.
 
+        This is the slot for the 'Search' button.
+        """
         # Set background of highlighted items to default
         self.clearItemsHighlighted()
 
@@ -748,8 +844,8 @@ class IbgeDataDownloader:
         treeView.collapseAll()
 
         # Preparing product search
-        self.dlgBar, self.progressBar = self.progressDialog(0, self.tr("Searching data..."))
-        self.dlgBar.show()
+        self.dlg_bar, self.progressBar = self.progressDialog(0, self.tr("Searching data..."))
+        self.dlg_bar.show()
         self.msgBar.pushMessage(
             self.tr("Processing"),
             self.tr(f"Searching products with '{text}' word.\nThis may take several minutes..."),
@@ -778,21 +874,23 @@ class IbgeDataDownloader:
         self.threadTask.progressChanged.connect(self.setProgressValue)
         self.threadTask.barMax.connect(self.setMaximumProgressBar)
         self.threadTask.textProgress.connect(self.setProgressText)
-        self.threadTask.processResult.connect(self.threadResult)
-        self.threadTask.taskCompleted.connect(self.endingProcess)
-        self.threadTask.taskTerminated.connect(self.endingProcess)
+        self.threadTask.processResult.connect(self.thread_result)
+        self.threadTask.taskCompleted.connect(self.end_process)
+        self.threadTask.taskTerminated.connect(self.end_process)
         self.taskManager.addTask(self.threadTask)
         # Hide QGIS native progress button
         self.qgisProgressButton.hide()
 
-    def buttonHelpClicked(self):
-        """Opens help dialog"""
-
+    def buttonHelpClicked(self) -> None:
+        """Show the help dialog."""
         self.helpDialog.show()
 
-    def configDialogs(self):
-        """Configures dialog and connects signals/slots."""
+    def configDialogs(self) -> None:
+        """Configure the main plugin dialog and the help dialog.
 
+        This method sets up initial UI elements, connects signals to slots,
+        and initializes models for the tree views.
+        """
         # Set window icon
         self.helpDialog.setWindowIcon(self.pluginIcon)
         self.dlg.setWindowIcon(self.pluginIcon)
@@ -842,9 +940,8 @@ class IbgeDataDownloader:
         self.dlg.checkBox_AddLayer.setEnabled(False)
         self.dlg.pushButton_Search.setEnabled(False)
 
-    def checkOkButton(self):
-        """Enables or disables OK button"""
-
+    def checkOkButton(self) -> None:
+        """Enable or disable the OK (download) button based on the current state."""
         if self.selectedProductsUrl:
             for p in self.selectedProductsUrl:
                 if os.path.splitext(p[1])[1] != "" and self.dirOutput != "":
@@ -857,16 +954,16 @@ class IbgeDataDownloader:
             # Disable OK button
             self.dlg.button_box.button(QDialogButtonBox.Ok).setEnabled(False)
 
-    def execute(self):
+    def execute(self) -> None:
         """Does the real work:
         -Download file
         -Extract file, if checked
         -Add selected statistical data *** NOT IMPLEMENTED
-        -Add layer to legend panel *** NOT IMPLEMENTED"""
-
+        -Add layer to legend panel *** NOT IMPLEMENTED
+        """
         # Preparing product download
-        self.dlgBar, self.progressBar = self.progressDialog(0, self.tr("Downloading data..."))
-        self.dlgBar.show()
+        self.dlg_bar, self.progressBar = self.progressDialog(0, self.tr("Downloading data..."))
+        self.dlg_bar.show()
         self.msgBar.pushMessage(
             self.tr("Processing"),
             self.tr("Working on selected data..."),
@@ -887,16 +984,15 @@ class IbgeDataDownloader:
         self.threadTask.progressChanged.connect(self.setProgressValue)
         self.threadTask.barMax.connect(self.setMaximumProgressBar)
         self.threadTask.textProgress.connect(self.setProgressText)
-        self.threadTask.processResult.connect(self.threadResult)
-        self.threadTask.taskCompleted.connect(self.endingProcess)
-        self.threadTask.taskTerminated.connect(self.endingProcess)
+        self.threadTask.processResult.connect(self.thread_result)
+        self.threadTask.taskCompleted.connect(self.end_process)
+        self.threadTask.taskTerminated.connect(self.end_process)
         self.taskManager.addTask(self.threadTask)
         # Hide QGIS native progress button
         self.qgisProgressButton.hide()
 
     def run(self):
         """Run method - plugin callback"""
-
         # Create the dialog with elements (after translation) and keep reference
         # Only create GUI ONCE in callback, so that it will only load when the plugin is started
         if self.firstStart:

@@ -1,5 +1,4 @@
-"""
-/***************************************************************************
+"""/***************************************************************************
         begin                : 2021-11-17
         git sha              : $Format:%H$
         copyright            : (C) 2021 by Vinicius Etchebeur Medeiros Dória
@@ -28,7 +27,8 @@ from qgis.PyQt.QtGui import QIcon
 
 class WorkerDownloadManager(QgsTask):
     """Downloads and extracts files from
-    zip or tar file in background"""
+    zip or tar file in background
+    """
 
     # Signals emitted
     textProgress = pyqtSignal(str)  # text for progress dialog
@@ -37,7 +37,6 @@ class WorkerDownloadManager(QgsTask):
 
     def __init__(self, iface, desc, listUrls, dirPad, listUnzipOptions):
         """Constructor."""
-
         # Mother class constructor QgsTask (subclass)
         super().__init__(desc, flags=QgsTask.CanCancel)
 
@@ -54,7 +53,6 @@ class WorkerDownloadManager(QgsTask):
 
     def getFileSize(self, url):
         """Returns file size of the url"""
-
         u = urllib.request.urlopen(url)
         meta = u.headers
         fileSize = int(meta.get("Content-Length"))
@@ -62,8 +60,8 @@ class WorkerDownloadManager(QgsTask):
 
     def finished(self, result):
         """This function is called automatically when the task is completed and is
-        called from the main thread so it is safe to interact with the GUI etc here"""
-
+        called from the main thread so it is safe to interact with the GUI etc here
+        """
         if result is False:
             self.msgBar.pushMessage(
                 self.tr("Error"),
@@ -88,7 +86,6 @@ class WorkerDownloadManager(QgsTask):
 
     def run(self):
         """Principal method that is automatically called when the task runs."""
-
         fails = 0
         for n, u in enumerate(self.listUrls):
             url = u[1]
@@ -129,7 +126,7 @@ class WorkerDownloadManager(QgsTask):
                             self.exception,
                             url,
                             "download",
-                        ]
+                        ],
                     )
                     return True
 
@@ -147,7 +144,9 @@ class WorkerDownloadManager(QgsTask):
             # Extracting downloaded files
             if self.unzip and any(fileName.endswith(ext) for ext in (".zip", ".tar")):
                 msg = self.tr("{n}/{total} - Extracting files from {file}...").format(
-                    n=n + 1, total=self.totalUrls, file=fileName
+                    n=n + 1,
+                    total=self.totalUrls,
+                    file=fileName,
                 )
                 self.textProgress.emit(msg)
                 if fileName.endswith("zip"):
@@ -162,12 +161,12 @@ class WorkerDownloadManager(QgsTask):
         self.processResult.emit(
             [
                 self.tr(
-                    'Process completed with {fails} fails. Check your file(s) at <a href="{saida}">{saida}</a>.'
+                    'Process completed with {fails} fails. Check your file(s) at <a href="{saida}">{saida}</a>.',
                 ).format(fails=fails, saida=self.dirPad),
                 Qgis.Success,
                 self.exception,
                 self.listUrls,
                 "download",
-            ]
+            ],
         )
         return True
