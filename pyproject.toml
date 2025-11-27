@@ -95,6 +95,7 @@ skip_gitignore = true
 [tool.ruff]
 line-length = 119
 target-version = "py312"
+select = ["ALL"]
 
 [tool.ruff.format]
 quote-style = "double"
