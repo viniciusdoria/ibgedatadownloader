@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Download e Pós-processamento</title>
+    <style>
+        body { font-family: sans-serif; }
+        h1, h2 { color: #333; }
+        a { color: #0056b3; }
+    </style>
+</head>
+<body>
+    <p><a href="home.html">&lt;&lt; Voltar para o Início</a></p>
+
+    <h1>Download e Pós-processamento</h1>
+
+    <h2>Iniciando o Download</h2>
+    <ol>
+        <li><strong>Selecione os Arquivos:</strong> Primeiro, <a href="browsing.html">selecione os arquivos</a> que deseja baixar.</li>
+        <li><strong>Escolha o Diretório de Saída:</strong> Clique no botão <strong>[...]</strong> ao lado do campo <strong>Diretório de saída</strong> e selecione uma pasta em seu computador onde os arquivos serão salvos.</li>
+        <li><strong>Clique em OK:</strong> O botão 'OK' ficará ativo assim que você selecionar pelo menos um arquivo e um diretório de saída. Clique nele para iniciar o processo de download.</li>
+    </ol>
+    <p>Uma janela de progresso aparecerá, mostrando o status do download.</p>
+
+    <h2>Opções de Pós-processamento</h2>
+    <p>Antes de iniciar o download, você pode habilitar as seguintes opções:</p>
+    <ul>
+        <li>
+            <strong>Descompactar arquivo(s) baixado(s):</strong> Se o arquivo baixado for um arquivo <code>.zip</code> ou <code>.tar</code>, o plugin extrairá automaticamente seu conteúdo para o diretório de saída. Esta opção só é habilitada se você selecionar um arquivo compactado.
+        </li>
+        <li>
+            <strong>Adicionar camada ao projeto após o download:</strong> Se a opção "Descompactar" também estiver habilitada e um Shapefile (<code>.shp</code>) for encontrado dentro de um arquivo extraído, ele será automaticamente adicionado como uma nova camada ao seu projeto QGIS.
+        </li>
+    </ul>
+
+</body>
+</html>

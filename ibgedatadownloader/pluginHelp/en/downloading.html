@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Downloading and Post-processing</title>
+    <style>
+        body { font-family: sans-serif; }
+        h1, h2 { color: #333; }
+        a { color: #0056b3; }
+    </style>
+</head>
+<body>
+    <p><a href="home.html">&lt;&lt; Back to Home</a></p>
+
+    <h1>Downloading and Post-processing</h1>
+
+    <h2>Starting the Download</h2>
+    <ol>
+        <li><strong>Select Files:</strong> First, <a href="browsing.html">select the files</a> you wish to download.</li>
+        <li><strong>Choose Output Directory:</strong> Click the <strong>[...]</strong> button next to the <strong>Output directory</strong> field and select a folder on your computer where the files will be saved.</li>
+        <li><strong>Click OK:</strong> The 'OK' button will become active once you have selected at least one file and an output directory. Click it to start the download process.</li>
+    </ol>
+    <p>A progress dialog will appear, showing the download status.</p>
+
+    <h2>Post-processing Options</h2>
+    <p>Before starting the download, you can enable the following options:</p>
+    <ul>
+        <li>
+            <strong>Unzip downloaded file(s):</strong> If the downloaded file is a <code>.zip</code> or <code>.tar</code> archive, the plugin will automatically extract its contents into the output directory. This option is only enabled if you select a compressed file.
+        </li>
+        <li>
+            <strong>Add layer to project after download:</strong> If the "Unzip" option is also enabled and a Shapefile (<code>.shp</code>) is found within an extracted archive, it will be automatically added as a new layer to your QGIS project.
+        </li>
+    </ul>
+
+</body>
+</html>

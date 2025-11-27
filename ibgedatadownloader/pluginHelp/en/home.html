@@ -1,65 +1,33 @@
 <!DOCTYPE html>
-<html lang="en-US">
+<html>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Home</title>
+    <title>IBGE Data Downloader Help</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
-
-        *{
-            padding: 0;
-            margin: 0;
-            font-family: 'Rbotoo', sans-serif;
-        }
-
-        header {
-            font-weight: bold;
-            font-size: 20px;
-        }
-
-        div {
-            margin-top: 10px;
-        }
-
-        div p {
-            font-size: 15px;
-        }
-
-        ul {
-            margin: 5px 0;
-        }
-
-        li {
-           margin: 5px 0;
-        }
-
-        a {
-            font-size: 15px;
-        }
-
+        body { font-family: sans-serif; }
+        h1, h2 { color: #333; }
+        a { color: #0056b3; }
     </style>
 </head>
 <body>
-    <header>
-        <p>Welcome to Help section of IBGE Data Downloader plugin</p>
-    </header>
+    <h1>IBGE Data Downloader</h1>
+    <p>
+        Welcome to the IBGE Data Downloader plugin help. This plugin allows you to easily browse, search, and download data directly from the IBGE (Brazilian Institute of Geography and Statistics) data repositories.
+    </p>
 
-    <div>
-        <p>Select the desired item below for more information:</p>
-        <ul>
-            <li>
-                <a class="button" href="about.html">About the plugin</a>
-            </li>
-            <li>
-                <a class="button" href="search.html">Search by word</a>
-            </li>
-        </ul>
-    </div>
+    <h2>Help Topics</h2>
+    <ul>
+        <li><a href="browsing.html">Browsing and Selecting Data</a></li>
+        <li><a href="searching.html">Searching for Data</a></li>
+        <li><a href="downloading.html">Downloading and Post-processing</a></li>
+    </ul>
 
-    <footer>
-      <p>This is not an IBGE official plugin.</p>
-    </footer>
-
+    <h2>Overview</h2>
+    <p>The main dialog is divided into a few key areas:</p>
+    <ol>
+        <li><strong>Data Source Tabs:</strong> Switch between 'Geospatial Data' and 'Statistical Data'.</li>
+        <li><strong>Product Tree:</strong> Navigate the directory structure of the selected data source.</li>
+        <li><strong>Search Panel:</strong> Find specific products by name.</li>
+        <li><strong>Download Options:</strong> Configure the output directory and post-download actions like unzipping files and adding layers to the map.</li>
+    </ol>
 </body>
 </html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Searching for Data</title>
+    <style>
+        body { font-family: sans-serif; }
+        h1, h2 { color: #333; }
+        a { color: #0056b3; }
+        code { background-color: #f1f1f1; padding: 2px 4px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <p><a href="home.html">&lt;&lt; Back to Home</a></p>
+
+    <h1>Searching for Data</h1>
+    <p>
+        The search panel helps you find products quickly without manually browsing the entire tree.
+    </p>
+
+    <h2>How to Search</h2>
+    <ol>
+        <li><strong>Select Data Source:</strong> Use the radio buttons (<code>Search in Geospatial Data</code> or <code>Search in Statistical Data</code>) to choose which repository to search.</li>
+        <li><strong>Enter a Keyword:</strong> Type your search term in the <strong>Search for</strong> field.</li>
+        <li><strong>Choose Search Type:</strong>
+            <ul>
+                <li><strong>Contains:</strong> If checked, the search will find all items whose names contain the keyword.</li>
+                <li><strong>Similarity:</strong> If 'Contains' is unchecked, the search uses a string similarity algorithm. You can set the minimum similarity score (0-100) for a match. A higher value means a stricter match.</li>
+            </ul>
+        </li>
+        <li><strong>(Optional) Limit Search Scope:</strong> To search only within a specific directory, first select that directory in the product tree, then check the <strong>Search in selected item only</strong> box.</li>
+        <li><strong>Start Search:</strong> Click the <strong>Search</strong> button.</li>
+    </ol>
+
+    <h2>Search Results</h2>
+    <p>
+        After the search is complete, the product tree will automatically expand to show the found items, which will be highlighted in yellow. This may take several minutes depending on the search scope.
+    </p>
+
+</body>
+</html>
