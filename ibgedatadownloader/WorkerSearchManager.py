@@ -15,13 +15,18 @@
  ***************************************************************************/
 """
 
+from __future__ import annotations
+
+import contextlib
 import http
 import http.client
 import socket
 import time
 import unicodedata
-import urllib
+import urllib.error
+import urllib.request
 from difflib import SequenceMatcher
+from typing import TYPE_CHECKING
 
 from qgis.core import Qgis, QgsProject, QgsTask
 from qgis.PyQt.QtCore import pyqtSignal
@@ -31,157 +36,207 @@ from ibgedatadownloader.__about__ import DIR_PLUGIN_ROOT
 
 from .MyHTMLParser import MyHTMLParser
 
+if TYPE_CHECKING:
+    from qgis.gui import QgisInterface
+
 
 class WorkerSearchManager(QgsTask):
-    """Searches in a FTP's url for a word in background"""
+    """Searches for a word in an FTP URL in the background.
+
+    This class inherits from QgsTask to perform a network-intensive search
+    without blocking the QGIS user interface. It recursively navigates through
+    directories on an FTP server, looking for matches to a search term.
+
+    :param iface: The QGIS interface.
+    :type iface: qgis.gui.QgisInterface
+    :param desc: A description for the task.
+    :type desc: str
+    :param rootFtp: The root FTP URL to start the search from.
+    :type rootFtp: str
+    :param txtSearch: The text to search for.
+    :type txtSearch: str
+    :param matchContains: If True, performs a "contains" search.
+    :type matchContains: bool
+    :param matchScore: The minimum similarity score for a match (0-100).
+    :type matchScore: float
+    """
 
     # Signals emitted
-    textProgress = pyqtSignal(str)  # text for progress dialog
-    processResult = pyqtSignal(list)  # process result
-    barMax = pyqtSignal(float)  # max number of progress bar
+    text_progress = pyqtSignal(str)  #: Signal to update progress text.
+    process_result = pyqtSignal(list)  #: Signal to emit the final result.
+    bar_max = pyqtSignal(float)  #: Signal to set the progress bar's maximum value.
 
-    def __init__(self, iface, desc, rootFtp, txtSearch, matchContains, matchScore):
-        """Constructor."""
+    def __init__(
+        self,
+        iface: QgisInterface,
+        desc: str,
+        root_ftp: str,
+        txt_search: str,
+        match_contains: bool,
+        match_score: float,
+    ) -> None:
+        """Initialize the WorkerSearchManager."""
         # Mother class constructor QgsTask (subclass)
         super().__init__(desc, flags=QgsTask.CanCancel)
 
         # Saving references
-        self.iface = iface
-        self.project = QgsProject.instance()
-        self.msgBar = self.iface.messageBar()
-        self.htmlParser = MyHTMLParser()
-        self.rootFtp = rootFtp if rootFtp.endswith("/") else f"{rootFtp}/"
-        self.txtSearch = txtSearch
-        self.matchContains = matchContains
-        self.matchScore = matchScore
-        self.pluginIcon = QIcon(str(DIR_PLUGIN_ROOT / "icon.png"))
-        self.exception = []
+        self.iface: QgisInterface = iface
+        self.project: QgsProject = QgsProject.instance()
+        self.msg_bar = self.iface.messageBar()
+        self.html_parser: MyHTMLParser = MyHTMLParser()
+        self.root_ftp: str = root_ftp if root_ftp.endswith("/") else f"{root_ftp}/"
+        self.txt_search: str = txt_search
+        self.match_contains: bool = match_contains
+        self.match_score: float = match_score
+        self.plugin_icon: QIcon = QIcon(str(DIR_PLUGIN_ROOT / "icon.png"))
+        self.exception: list[Exception | str] = []
 
         # Avoid headers and maxlines limit error
         http.client._MAXHEADERS = 999999999999999999
         http.client._MAXLINE = 999999999999999999
 
-    def standardizeText(self, text):
-        """Standardizes texts to check equality."""
-        text = unicodedata.normalize("NFD", text)
-        text = text.encode("ascii", "ignore")
-        text = text.decode("utf-8")
-        text = text.replace(" ", "_")
-        return text.lower()
+    def standardize_text(self, text: str) -> str:
+        """Standardize text for comparison.
 
-    def finished(self, result):
-        """This function is called automatically when the task is completed and is
-        called from the main thread so it is safe to interact with the GUI etc here
+        Normalizes text by removing accents, converting to lowercase,
+        and replacing spaces with underscores.
+
+        :param text: The text to standardize.
+        :type text: str
+        :returns: The standardized text.
+        :rtype: str
+        """
+        t = unicodedata.normalize("NFD", text)
+        t = t.encode("ascii", "ignore")
+        t = t.decode("utf-8")
+        t = t.replace(" ", "_")
+        return t.lower()
+
+    def finished(self, result: bool) -> None:
+        """Handle the task's completion.
+
+        This method is called from the main thread when the task finishes.
+        It displays a message to the user based on the task's outcome.
+
+        :param result: True if the task completed successfully, False otherwise.
+        :type result: bool
         """
         if result is False:
-            self.msgBar.pushMessage(
+            self.msg_bar.pushMessage(
                 self.tr("Error"),
                 self.tr("Oops, something went wrong! Please, contact the developer by e-mail."),
                 Qgis.Critical,
                 duration=0,
             )
         elif self.exception != []:
-            self.msgBar.pushMessage(
+            self.msg_bar.pushMessage(
                 self.tr("Warning"),
                 self.tr("Process partially completed."),
                 Qgis.Warning,
                 duration=0,
             )
         else:
-            self.msgBar.pushMessage(
+            self.msg_bar.pushMessage(
                 self.tr("Success"),
                 self.tr("Process completed."),
                 Qgis.Success,
                 duration=0,
             )
 
-    def run(self):
-        """Principal method that is automatically called when the task runs."""
-        self.barMax.emit(0)
+    def run(self) -> bool:
+        """Execute the background search task.
 
-        matchUrl = []
+        This is the main method that runs in a separate thread. It performs
+        the recursive search on the FTP server.
 
-        self.htmlParser.resetParent()
-        self.htmlParser.resetChildren()
-        self.htmlParser.resetChild()
+        :returns: True if the search completes, False if it's canceled.
+        :rtype: bool
+        """
+        self.bar_max.emit(0)
+
+        match_url: list[list[str]] = []
+
+        self.html_parser.resetParent()
+        self.html_parser.resetChildren()
+        self.html_parser.resetChild()
         # Set timeout for requests
         socket.setdefaulttimeout(15)
         try:
-            response = urllib.request.urlopen(self.rootFtp)
-            self.htmlParser.feed(response.read().decode("utf-8", errors="ignore"))
+            with urllib.request.urlopen(self.root_ftp) as response:
+                self.html_parser.feed(response.read().decode("utf-8", errors="ignore"))
         except TimeoutError as e:
             self.exception.append(e)
-            self.processResult.emit(
+            self.process_result.emit(
                 [
                     self.tr("The search fails due to a server timeout."),
                     Qgis.Critical,
                     self.exception,
-                    matchUrl,
+                    match_url,
                     "search",
                 ],
             )
             return True
         # Set timeout for requests to default
         socket.setdefaulttimeout(None)
-        children = self.htmlParser.getChildren()
+        children = self.html_parser.getChildren()
 
         fails = 0
         if children:
-            searchUrls = []
+            search_urls: list[list[str]] = []
             for child in children:
                 # Skip child pointing to the domain
                 if child[0] == "https://www.ibge.gov.br/":
                     continue
-                searchUrls.append([self.rootFtp + child[0], child[1]])
-                if self.matchContains:
-                    if self.txtSearch.lower() in child[0].lower():
-                        matchUrl.append([self.rootFtp + child[0], child[1]])
-                        self.textProgress.emit(
-                            self.tr(f"{len(matchUrl)} Product(s) found.\nThe search may take several minutes..."),
+                search_urls.append([self.root_ftp + child[0], child[1]])
+                if self.match_contains:
+                    if self.txt_search.lower() in child[0].lower():
+                        match_url.append([self.root_ftp + child[0], child[1]])
+                        self.text_progress.emit(
+                            self.tr(f"{len(match_url)} Product(s) found.\nThe search may take several minutes..."),
                         )
                 elif (
                     SequenceMatcher(
                         None,
-                        self.standardizeText(self.txtSearch),
-                        self.standardizeText(child[0]),
+                        self.standardize_text(self.txt_search),
+                        self.standardize_text(child[0]),
                     ).ratio()
                     * 100
-                    >= self.matchScore
+                    >= self.match_score
                 ):
-                    matchUrl.append([self.rootFtp + child[0], child[1]])
-                    self.textProgress.emit(
-                        self.tr(f"{len(matchUrl)} Product(s) found.\nThe search may take several minutes..."),
+                    match_url.append([self.root_ftp + child[0], child[1]])
+                    self.text_progress.emit(
+                        self.tr(f"{len(match_url)} Product(s) found.\nThe search may take several minutes..."),
                     )
             loop = 0
             while True:
-                for sUrl in searchUrls:
+                for search_url in search_urls:
                     # Check if task was canceled by the user
                     if self.isCanceled():
                         # self.exception.append(self.tr('Process canceled by user.'))
-                        self.processResult.emit(
+                        self.process_result.emit(
                             [
                                 self.tr("The process was canceled by the user."),
                                 Qgis.Warning,
                                 self.exception,
-                                matchUrl,
+                                match_url,
                                 "search",
                             ],
                         )
                         return False
                     loop += 1
                     # Avoid files
-                    if not sUrl[0].endswith("/"):
-                        searchUrls.remove(sUrl)
+                    if not search_url[0].endswith("/"):
+                        search_urls.remove(search_url)
                         continue
-                    self.htmlParser.resetParent()
-                    self.htmlParser.resetChildren()
-                    self.htmlParser.resetChild()
+                    self.html_parser.resetParent()
+                    self.html_parser.resetChildren()
+                    self.html_parser.resetChild()
                     try:
                         # print('feed1', sUrl[0])
                         # Set timeout for requests
                         socket.setdefaulttimeout(15)
-                        response = urllib.request.urlopen(sUrl[0])
-                        self.htmlParser.feed(response.read().decode("utf-8", errors="ignore"))
+                        with urllib.request.urlopen(search_url[0]) as response:
+                            self.html_parser.feed(response.read().decode("utf-8", errors="ignore"))
                         # Set timeout for requests to default
                         socket.setdefaulttimeout(None)
                     except (TimeoutError, urllib.error.HTTPError, NotImplementedError):
@@ -194,8 +249,8 @@ class WorkerSearchManager(QgsTask):
                             # print('feed2', sUrl[0])
                             # Set timeout for requests
                             socket.setdefaulttimeout(15)
-                            response = urllib.request.urlopen(sUrl[0])
-                            self.htmlParser.feed(response.read().decode("utf-8", errors="ignore"))
+                            with urllib.request.urlopen(search_url[0]) as response:
+                                self.html_parser.feed(response.read().decode("utf-8", errors="ignore"))
                             # Set timeout for requests to default
                             socket.setdefaulttimeout(None)
                             # print('feed2 ok', sUrl[0])
@@ -203,58 +258,56 @@ class WorkerSearchManager(QgsTask):
                             # Set timeout for requests to default
                             socket.setdefaulttimeout(None)
                             # print(e.code, e.reason, e.headers)
-                            if e == urllib.error.HTTPError:
+                            if isinstance(e, urllib.error.HTTPError):
                                 self.exception.append(e.reason)
-                            elif e == socket.timeout:
+                            elif isinstance(e, socket.timeout):
                                 self.exception.append(self.tr("Timeout error."))
-                            elif e == NotImplementedError:
+                            elif isinstance(e, NotImplementedError):
                                 self.exception.append(self.tr("Not implemented error."))
-                            searchUrls.remove(sUrl)
+                            search_urls.remove(search_url)
                             fails += 1
                             continue
-                    children = self.htmlParser.getChildren()
+                    children = self.html_parser.getChildren()
                     if children:
                         for child in children:
                             if child[0] == "https://www.ibge.gov.br/":
                                 continue
-                            searchUrls.append([sUrl[0] + child[0], child[1]])
-                            if self.matchContains:
-                                if self.txtSearch.lower() in child[0].lower():
-                                    matchUrl.append([sUrl[0] + child[0], child[1]])
-                                    self.textProgress.emit(
+                            search_urls.append([search_url[0] + child[0], child[1]])
+                            if self.match_contains:
+                                if self.txt_search.lower() in child[0].lower():
+                                    match_url.append([search_url[0] + child[0], child[1]])
+                                    self.text_progress.emit(
                                         self.tr("{} Product(s) found.\nThe search may take several minutes...").format(
-                                            len(matchUrl),
+                                            len(match_url),
                                         ),
                                     )
                             elif (
                                 SequenceMatcher(
                                     None,
-                                    self.standardizeText(self.txtSearch),
-                                    self.standardizeText(child[0]),
+                                    self.standardize_text(self.txt_search),
+                                    self.standardize_text(child[0]),
                                 ).ratio()
                                 * 100
-                                >= self.matchScore
+                                >= self.match_score
                             ):
-                                matchUrl.append([sUrl[0] + child[0], child[1]])
-                                self.textProgress.emit(
+                                match_url.append([search_url[0] + child[0], child[1]])
+                                self.text_progress.emit(
                                     self.tr("{} Product(s) found.\nThe search may take several minutes...").format(
-                                        len(matchUrl),
+                                        len(match_url),
                                     ),
                                 )
-                    try:
-                        searchUrls.remove(sUrl)
-                    except ValueError:
-                        pass
+                    with contextlib.suppress(ValueError):
+                        search_urls.remove(search_url)
                 # print('end while for', len(searchUrls))
-                if len(searchUrls) == 0:
+                if len(search_urls) == 0:
                     break
 
-        self.processResult.emit(
+        self.process_result.emit(
             [
-                self.tr(f"Search completed with {len(matchUrl)} product(s) found and {fails} fails."),
+                self.tr(f"Search completed with {len(match_url)} product(s) found and {fails} fails."),
                 Qgis.Success,
                 self.exception,
-                matchUrl,
+                match_url,
                 "search",
             ],
         )
