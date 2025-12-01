@@ -59,7 +59,6 @@ jobs:
           gh release create ${GITHUB_REF/refs\/tags\//} \
             --title "Release ${GITHUB_REF/refs\/tags\//}" \
             --notes-file release.md \
-            --generate-notes \
             || true
 
       - name: Deploy plugin (Release & Repo)
