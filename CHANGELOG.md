@@ -2,6 +2,10 @@
 
 Formato baseado no [Keep a Changelog](https://keepachangelog.com/pt-BR/) com [Versionamento Semântico](https://semver.org/lang/pt-BR/).
 
+## 0.2.1 - 12/01/2022
+
+- Update help section.
+
 ## 0.2.0 - 11/26/2022
 
 - Upgrade to latest QGIS LTR version.
